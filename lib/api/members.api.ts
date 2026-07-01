@@ -157,7 +157,7 @@ export const membersApi = {
    * Returns a URL that triggers a CSV download when opened.
    */
   downloadStatementUrl: (id: string, year?: number): string => {
-    const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+    const base = process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com/api/v1';
     const yr   = year ? `&year=${year}` : '';
     return `${base}/members/${id}/statement?format=csv${yr}`;
   },

@@ -5,6 +5,7 @@ export interface RegisterOrgInput {
   admin_name:     string;
   admin_email:    string;
   admin_password: string;
+  logo?:          File; // optional — uploaded via req.file on POST /orgs
 }
 
 export interface OrgResponse {
@@ -45,13 +46,14 @@ export const orgsApi = {
    * Public — no auth required.
    */
   register: async (input: RegisterOrgInput): Promise<RegisterOrgResponse> => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com/api/v1';
 
     const form = new FormData();
     form.append('name', input.name);
     form.append('admin_name', input.admin_name);
     form.append('admin_email', input.admin_email);
     form.append('admin_password', input.admin_password);
+    if (input.logo) form.append('logo', input.logo);
 
     const res = await fetch(`${API_BASE}/orgs`, {
       method: 'POST',
@@ -69,11 +71,11 @@ export const orgsApi = {
 
   /**
    * getBySlug — GET /orgs/:slug
-   * Returns public org info (name, logo, joinLink).
-   * Called by the join page before the member enters their phone.
+   * Returns org info by slug. Requires admin auth.
+   * NOT used on the join page (which uses giveApi — public endpoint).
    */
   getBySlug: (slug: string) =>
-    api.get<PublicOrgResponse>(`/orgs/${slug}`, { isPublic: true }),
+    api.get<PublicOrgResponse>(`/orgs/${slug}`, { tokenType: 'admin' }),
 
   /**
    * update — PATCH /orgs/:id
@@ -81,7 +83,7 @@ export const orgsApi = {
    * Admin auth required. Org-scoped.
    */
   update: async (id: string, fields: { name?: string }): Promise<OrgResponse> => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com/api/v1';
     const token =
       typeof window !== 'undefined'
         ? localStorage.getItem('owoore_admin_token')
@@ -111,7 +113,7 @@ export const orgsApi = {
    * Returns the updated org with logo_url populated.
    */
   uploadLogo: async (id: string, file: File): Promise<OrgResponse> => {
-    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com/api/v1';
     const token =
       typeof window !== 'undefined'
         ? localStorage.getItem('owoore_admin_token')

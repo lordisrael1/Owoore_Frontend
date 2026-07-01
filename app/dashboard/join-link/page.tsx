@@ -33,7 +33,9 @@ export default function JoinLinkPage() {
     { revalidateOnFocus: false },
   );
 
-  const joinUrl     = `${process.env.NEXT_PUBLIC_APP_URL ?? 'https://owoore.com'}/join/${slug}`;
+  const appBase     = process.env.NEXT_PUBLIC_APP_URL ?? 'https://owoore.com';
+  const joinUrl     = `${appBase}/join/${slug}`;
+  const giveUrl     = `${appBase}/give/${slug}`;
   // All active shared-VA funds — show even if VA not yet initialised (shared_va_number null)
   const sharedFunds = funds.filter((f) => f.is_active && f.is_shared_va);
   const isLoading   = fundsLoading || giveLoading;
@@ -70,6 +72,34 @@ export default function JoinLinkPage() {
           </code>
           <CopyButton text={joinUrl} label="Copy" successLabel="Copied!" size="sm" />
         </div>
+      </section>
+
+      {/* ── Projector / Sunday service URL ── */}
+      <section className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-5 space-y-3">
+        <div className="flex items-center gap-2">
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Sunday service screen</p>
+          <Badge variant="new" size="xs">Projector URL</Badge>
+        </div>
+        <p className="text-xs text-gray-500 dark:text-gray-400">
+          Open this URL on the church screen during service — shows the giving account number. No login required.
+        </p>
+        <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-xl px-4 py-3">
+          <code className="text-sm font-mono text-gray-800 dark:text-gray-200 flex-1 truncate">
+            {giveUrl}
+          </code>
+          <CopyButton text={giveUrl} label="Copy" successLabel="Copied!" size="sm" />
+        </div>
+        <a
+          href={giveUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs text-green-700 dark:text-green-400 hover:underline"
+        >
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            <path d="M3.5 1H1v10h10V8.5M7 1h4v4M11 1L5.5 6.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Open giving page
+        </a>
       </section>
 
       {/* ── Projector accounts ── */}

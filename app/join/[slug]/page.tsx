@@ -1,11 +1,10 @@
 'use client';
 import React, { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { orgsApi }   from '@/lib/api/orgs.api';
+import { giveApi }   from '@/lib/api/give.api';
 import { OtpForm }   from '@/components/member/OtpForm';
 import { PageLoader } from '@/components/ui/Spinner';
 import useSWR        from 'swr';
-import type { Metadata } from 'next';
 
 /**
  * app/join/[slug]/page.tsx — Member join page.
@@ -30,12 +29,15 @@ export default function JoinPage() {
   const [joined, setJoined] = useState(false);
   const [memberName, setMemberName] = useState('');
 
-  // Fetch org details (church name, logo)
-  const { data: org, isLoading, error } = useSWR(
-    slug ? `orgs/${slug}` : null,
-    () => orgsApi.getBySlug(slug),
+  // Fetch org details via the public give endpoint (GET /give/:slug)
+  // which returns { org: { name, slug, logo_url }, account, notice }
+  // and is confirmed public — no auth required.
+  const { data: giveData, isLoading, error } = useSWR(
+    slug ? `give/${slug}` : null,
+    () => giveApi.getAnonymousVAs(slug),
     { revalidateOnFocus: false },
   );
+  const org = giveData?.org ?? null;
 
   const handleSuccess = (name: string, isNew: boolean) => {
     // Set cookie for middleware (alongside localStorage set by authApi)

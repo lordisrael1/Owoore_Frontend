@@ -91,7 +91,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
     >
       <head>
         {/* Preconnect to backend for faster API calls */}
-        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000'} />
+        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com'} />
         {/* DNS prefetch for Nomba API */}
         <link rel="dns-prefetch" href="https://api.nomba.com" />
       </head>

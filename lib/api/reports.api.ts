@@ -92,7 +92,7 @@ export const reportsApi = {
    * navigations can't set custom headers.
    */
   downloadGivingUrl: (orgId: string, period?: string): string => {
-    const base  = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api/v1';
+    const base  = process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com/api/v1';
     const token = typeof window !== 'undefined'
       ? localStorage.getItem('owoore_admin_token') ?? ''
       : '';
