@@ -27,13 +27,12 @@ export const InitiatePayoutForm: React.FC<InitiatePayoutFormProps> = ({
 }) => {
   const { error, success } = useToast();
 
-  const [step,      setStep]      = React.useState<FormStep>('fund');
-  const [fundId,    setFundId]    = React.useState('');
-  const [verified,  setVerified]  = React.useState<BankLookupResult | null>(null);
-  const [bankAcctId, setBankAcctId] = React.useState('');
-  const [amount,    setAmount]    = React.useState('');
-  const [purpose,   setPurpose]   = React.useState('');
-  const [loading,   setLoading]   = React.useState(false);
+  const [step,     setStep]    = React.useState<FormStep>('fund');
+  const [fundId,   setFundId]  = React.useState('');
+  const [verified, setVerified] = React.useState<BankLookupResult | null>(null);
+  const [amount,   setAmount]  = React.useState('');
+  const [purpose,  setPurpose] = React.useState('');
+  const [loading,  setLoading] = React.useState(false);
 
   const fundOptions = funds.map((f) => ({ label: f.name, value: f.id }));
   const selectedFund = funds.find((f) => f.id === fundId);
@@ -42,9 +41,8 @@ export const InitiatePayoutForm: React.FC<InitiatePayoutFormProps> = ({
   const steps: FormStep[] = ['fund', 'bank', 'amount', 'confirm'];
   const stepIdx = steps.indexOf(step);
 
-  const handleBankVerified = (result: BankLookupResult, acctId: string) => {
+  const handleBankVerified = (result: BankLookupResult) => {
     setVerified(result);
-    setBankAcctId(acctId);
     setStep('amount');
   };
 
@@ -57,10 +55,12 @@ export const InitiatePayoutForm: React.FC<InitiatePayoutFormProps> = ({
     setLoading(true);
     try {
       const result = await payoutsApi.initiate({
-        fund_type_id:    fundId,
-        bank_account_id: bankAcctId || verified.bankCode,
-        amount:          fromKobo(amountKobo), // naira
-        purpose:         purpose.trim(),
+        fund_type_id:   fundId,
+        bank_code:      verified.bankCode,
+        account_number: verified.accountNumber,
+        account_name:   verified.accountName,
+        amount:         fromKobo(amountKobo), // naira
+        purpose:        purpose.trim(),
       });
       success('Payout initiated', 'Approval emails have been sent to your signatories.');
       onSuccess(result.payoutRequestId);

@@ -32,10 +32,12 @@ export interface PayoutRequest {
 }
 
 export interface InitiatePayoutInput {
-  fund_type_id:    string;
-  bank_account_id: string;
-  amount:          number; // naira — backend converts to kobo
-  purpose:         string;
+  fund_type_id:   string;
+  bank_code:      string;
+  account_number: string;
+  account_name:   string;
+  amount:         number; // naira — backend converts to kobo
+  purpose:        string;
 }
 
 export interface BankOption {

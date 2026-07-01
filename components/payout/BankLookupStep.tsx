@@ -10,7 +10,7 @@ import type { BankLookupResult, BankOption } from '@/lib/api/payouts.api';
 
 interface BankLookupStepProps {
   banks:      BankOption[];
-  onVerified: (result: BankLookupResult, bankAccountId: string) => void;
+  onVerified: (result: BankLookupResult) => void;
 }
 
 export const BankLookupStep: React.FC<BankLookupStepProps> = ({
@@ -43,9 +43,7 @@ export const BankLookupStep: React.FC<BankLookupStepProps> = ({
 
   const handleConfirm = () => {
     if (!verified) return;
-    // bankAccountId would come from org's registered bank accounts
-    // For payout flow, we use the verified result directly
-    onVerified(verified, bankCode);
+    onVerified(verified);
   };
 
   return (
