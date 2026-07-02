@@ -6,6 +6,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { useToast } from '@/components/ui/Toast';
 import { cn } from '@/lib/cn';
+import { api } from '@/lib/api/client';
 
 interface Invite {
   name:   string;
@@ -38,8 +39,11 @@ export const InviteTeamForm: React.FC<InviteTeamFormProps> = ({
 
     setLoading(true);
     try {
-      // POST /admin-users/invite — not yet built, simulated here
-      await new Promise((res) => setTimeout(res, 800));
+      await api.post(
+        '/admin-users/invite',
+        { email: email.trim(), name: name.trim(), role },
+        { tokenType: 'admin' },
+      );
       setInvites((prev) => [...prev, { name: name.trim(), email: email.trim(), role, sent: true }]);
       setName('');
       setEmail('');

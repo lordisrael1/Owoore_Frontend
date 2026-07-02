@@ -129,6 +129,16 @@ export default function SetupPage() {
             Open dashboard →
           </button>
         )}
+
+        {/* Skip — always visible */}
+        {!allDone && (
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="w-full py-2.5 text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+          >
+            Skip for now → go to dashboard
+          </button>
+        )}
       </div>
     </div>
   );

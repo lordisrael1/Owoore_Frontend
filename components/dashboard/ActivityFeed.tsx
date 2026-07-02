@@ -33,19 +33,11 @@ interface ActivityFeedProps {
   loading?:  boolean;
 }
 
-const DEFAULT_ITEMS: ActivityItem[] = [
-  { id:'1', type:'payment', title:'₦50,000 tithe received',    desc:'Bro. Adebayo · CHR-00142 · auto-reconciled', time: new Date(Date.now()-120000).toISOString(),    unread:true  },
-  { id:'2', type:'payout',  title:'Payout awaiting approval',  desc:'₦500,000 · Building fund · 2 of 3 signed',  time: new Date(Date.now()-3600000).toISOString(),   unread:true  },
-  { id:'3', type:'member',  title:'New member joined',         desc:'Folake Adeyemi · CHR-00211 via join link',  time: new Date(Date.now()-7200000).toISOString(),   unread:true  },
-  { id:'4', type:'payment', title:'₦100,000 building fund',    desc:'Deacon Musa · pledge fulfilled',            time: new Date(Date.now()-86400000).toISOString(),               },
-  { id:'5', type:'campaign',title:'Campaign closing in 3 days',desc:'Pastor appreciation · ends Jun 30, 2026',  time: new Date(Date.now()-90000000).toISOString(),               },
-];
-
 export const ActivityFeed: React.FC<ActivityFeedProps> = ({
   items,
   loading = false,
 }) => {
-  const data = items ?? DEFAULT_ITEMS;
+  const data = items ?? [];
 
   return (
     <Card>
@@ -69,6 +61,11 @@ export const ActivityFeed: React.FC<ActivityFeedProps> = ({
               </div>
             </div>
           ))}
+        </div>
+      ) : data.length === 0 ? (
+        <div className="py-6 text-center">
+          <p className="text-xs text-gray-400 dark:text-gray-500">No activity yet</p>
+          <p className="text-[10px] text-gray-300 dark:text-gray-600 mt-1">Payments and events will appear here</p>
         </div>
       ) : (
         <div className="divide-y divide-gray-50 dark:divide-gray-800">
