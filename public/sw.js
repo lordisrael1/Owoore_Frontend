@@ -11,7 +11,7 @@
  * Offline fallback: if API fails and no cache, show /offline page.
  */
 
-const CACHE_VERSION  = 'owoore-v1';
+const CACHE_VERSION  = 'owoore-v2';
 const SHELL_CACHE    = `${CACHE_VERSION}-shell`;
 const API_CACHE      = `${CACHE_VERSION}-api`;
 const OFFLINE_URL    = '/portal/offline';
@@ -100,9 +100,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // App shell — Cache First (portal pages load instantly on revisit)
-  if (url.pathname.startsWith('/portal')) {
+  // Next.js static assets have content-addressed hashes — truly immutable, safe to cache forever
+  if (url.pathname.startsWith('/_next/static/')) {
     event.respondWith(cacheFirst(request, SHELL_CACHE));
+    return;
+  }
+
+  // Portal HTML pages — Network First so we always get the latest chunk references after a deploy.
+  // Stale cached HTML is what caused the "chunk 404 → crash" bug: the cached page referenced
+  // old _next/static chunk hashes that no longer exist on Vercel after a redeploy.
+  if (url.pathname.startsWith('/portal')) {
+    event.respondWith(networkFirst(request, SHELL_CACHE));
     return;
   }
 
