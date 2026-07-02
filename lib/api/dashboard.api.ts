@@ -8,6 +8,7 @@ export interface DashboardSummary {
   active_members:                number;
   total_transactions:            number;
   period_month:                  string;
+  deficit_member_count:          number;
   total_collected_display:       string;
   available_display:             string;
   pending_payouts_display:       string;

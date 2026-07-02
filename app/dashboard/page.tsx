@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import { useDashboard, useMemberStatus } from '@/hooks/useDashboard';
 import { useUiStore }                    from '@/store/uiStore';
 import { MetricStrip }       from '@/components/dashboard/MetricStrip';
@@ -33,7 +32,7 @@ export default function DashboardPage() {
     summaryLoading, fundLoading, isLoading,
   } = useDashboard(activePeriod);
 
-  const { members, isLoading: membersLoading } = useMemberStatus(activePeriod, true);
+  const { members, isLoading: membersLoading } = useMemberStatus(activePeriod);
   const { payouts, cancelPayout } = usePayouts('PENDING');
 
   const pendingPayout = payouts[0] ?? null;
@@ -49,16 +48,12 @@ export default function DashboardPage() {
     created_at:     p.created_at,
   }));
 
-  // Deficit count from member status
-  const deficitCount = (members ?? []).filter((m) => m.payment_status === 'UNPAID' || m.payment_status === 'PARTIAL').length;
-
   return (
     <div className="space-y-4 animate-fade-in">
       {/* Metric strip */}
       <MetricStrip
         data={summary}
         loading={summaryLoading}
-        deficitCount={deficitCount}
       />
 
       {/* Two-column grid */}

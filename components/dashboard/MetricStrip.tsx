@@ -27,15 +27,13 @@ const AlertIcon = () => (
 );
 
 interface MetricStripProps {
-  data?:     DashboardSummary;
-  loading?:  boolean;
-  deficitCount?: number;
+  data?:    DashboardSummary;
+  loading?: boolean;
 }
 
 export const MetricStrip: React.FC<MetricStripProps> = ({
   data,
-  loading      = false,
-  deficitCount = 0,
+  loading = false,
 }) => {
   if (loading) {
     return (
@@ -45,25 +43,22 @@ export const MetricStrip: React.FC<MetricStripProps> = ({
     );
   }
 
-  const collected = data?.total_collected_all_time_kobo ?? 0;
-  const members   = data?.active_members ?? 0;
-  const pending   = data?.pending_payouts_kobo ?? 0;
+  const collected    = data?.total_collected_all_time_kobo ?? 0;
+  const members      = data?.active_members ?? 0;
+  const pending      = data?.pending_payouts_kobo ?? 0;
+  const deficitCount = data?.deficit_member_count ?? 0;
 
   return (
     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3" role="region" aria-label="Summary metrics">
       <MetricCard
         label="Total collected"
         value={data?.total_collected_display ?? formatNairaCompact(collected)}
-        delta="+18% vs last month"
-        deltaDir="up"
         icon={<TrendUpIcon />}
         color="green"
       />
       <MetricCard
         label="Active members"
         value={members.toLocaleString()}
-        delta="23 new this month"
-        deltaDir="up"
         icon={<UsersIcon />}
         color="blue"
       />
