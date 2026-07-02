@@ -1,4 +1,4 @@
-import { api, setToken, clearToken } from './client';
+import { api, setToken, clearToken, setRefreshToken, getRefreshToken } from './client';
 
 export interface SendOtpInput {
   email:    string;
@@ -13,7 +13,9 @@ export interface VerifyOtpInput {
 }
 
 export interface VerifyOtpResponse {
-  token:  string;
+  token:                 string;
+  refreshToken:          string;
+  refreshTokenExpiresAt: string; // ISO date string
   member: {
     id:         string;
     name:       string;
@@ -53,20 +55,21 @@ export const authApi = {
 
   /**
    * verifyOtp — POST /auth/verify-otp
-   * Member submits OTP. Returns JWT + member profile.
-   * If isNew = true, the account was just created.
-   * Automatically stores the member token in localStorage.
+   * Member submits OTP. Returns short-lived access token (1h) + long-lived
+   * refresh token (30d). Stores both in localStorage.
+   * If member.isNew = true, the account was just created.
    */
   verifyOtp: async (input: VerifyOtpInput): Promise<VerifyOtpResponse> => {
     const data = await api.post<VerifyOtpResponse>('/auth/verify-otp', input, { isPublic: true });
     setToken('member', data.token);
+    setRefreshToken(data.refreshToken);
     return data;
   },
 
   /**
    * adminLogin — POST /auth/admin/login
    * Admin or treasurer login with email + password.
-   * Automatically stores the admin token in localStorage.
+   * Admin sessions use only access tokens — no refresh flow.
    */
   adminLogin: async (input: AdminLoginInput): Promise<AdminLoginResponse> => {
     const data = await api.post<AdminLoginResponse>('/auth/admin/login', input, { isPublic: true });
@@ -76,15 +79,21 @@ export const authApi = {
 
   /**
    * refresh — POST /auth/refresh
-   * Re-issues a member JWT from an existing valid token.
-   * Called automatically by client.ts on 401 — rarely needed directly.
+   * Re-issues a member access token using the stored refresh token.
+   * Sends { token: refreshToken } in the request body — no Authorization header.
+   * Called automatically by client.ts on 401; rarely needed directly.
+   * Backend rotates the refresh token on every call; client.ts persists the new one.
    */
   refresh: () =>
-    api.post<{ token: string }>('/auth/refresh', undefined, { tokenType: 'member' }),
+    api.post<{ token: string; refreshToken?: string }>(
+      '/auth/refresh',
+      { token: getRefreshToken() },
+      { isPublic: true }, // no Authorization header — token is in the body
+    ),
 
   /**
    * logoutMember / logoutAdmin — clears local tokens.
-   * No server call needed — JWTs are stateless.
+   * clearToken('member') automatically clears both access + refresh tokens.
    */
   logoutMember: () => clearToken('member'),
   logoutAdmin:  () => clearToken('admin'),
