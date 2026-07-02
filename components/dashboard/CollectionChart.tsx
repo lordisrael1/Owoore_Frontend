@@ -6,8 +6,8 @@ import { formatNairaCompact, formatPeriod } from '@/lib/format';
 import type { DashboardSummary } from '@/lib/api/dashboard.api';
 
 interface CollectionChartProps {
-  trend?:    DashboardSummary['trend'];
-  loading?:  boolean;
+  trend?:   DashboardSummary['trend'];
+  loading?: boolean;
 }
 
 const PLACEHOLDER = [
@@ -23,15 +23,25 @@ export const CollectionChart: React.FC<CollectionChartProps> = ({
   trend,
   loading = false,
 }) => {
-  const data    = trend ?? PLACEHOLDER;
-  const maxVal  = Math.max(...data.map((d) => d.total_collected_kobo), 1);
+  const data   = trend ?? PLACEHOLDER;
+  const maxVal = Math.max(...data.map((d) => d.total_collected_kobo), 1);
   const current = data[data.length - 1]?.period_month;
 
   const [animated, setAnimated] = React.useState(false);
+  const ref = React.useRef<HTMLDivElement>(null);
+
   React.useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 100);
-    return () => clearTimeout(t);
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      ([entry]) => { if (entry.isIntersecting) { setAnimated(true); obs.unobserve(el); } },
+      { threshold: 0.2 },
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
   }, []);
+
+  const ytdTotal = data.reduce((s, d) => s + d.total_collected_kobo, 0);
 
   return (
     <Card>
@@ -50,39 +60,56 @@ export const CollectionChart: React.FC<CollectionChartProps> = ({
       />
 
       {loading ? (
-        <div className="h-36 bg-gray-50 dark:bg-gray-800 rounded-lg animate-pulse" />
+        <div className="h-36 bg-gray-50 dark:bg-gray-800 rounded-xl animate-pulse" />
       ) : (
         <>
           {/* Bar chart */}
-          <div className="flex items-end gap-2 h-36 mb-3" role="img" aria-label="Monthly collection bar chart">
-            {data.map((d) => {
+          <div
+            ref={ref}
+            className="flex items-end gap-1.5 h-36 mb-3"
+            role="img"
+            aria-label="Monthly collection bar chart"
+          >
+            {data.map((d, i) => {
               const pct     = (d.total_collected_kobo / maxVal) * 100;
               const isCurr  = d.period_month === current;
               const label   = formatPeriod(d.period_month).split(' ')[0].slice(0, 3);
               const display = formatNairaCompact(d.total_collected_kobo);
+              const animDelay = i * 60;
 
               return (
-                <div key={d.period_month} className="flex-1 flex flex-col items-center gap-1.5 group" title={`${formatPeriod(d.period_month)}: ${display}`}>
-                  {/* Value label */}
-                  <span className="text-[9px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div
+                  key={d.period_month}
+                  className="flex-1 flex flex-col items-center gap-1.5 group"
+                  title={`${formatPeriod(d.period_month)}: ${display}`}
+                >
+                  {/* Hover value label */}
+                  <span className="text-[9px] text-gray-400 dark:text-gray-500 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                     {display}
                   </span>
+
                   {/* Bar */}
                   <div className="w-full flex-1 flex items-end">
                     <div
                       className={cn(
-                        'w-full rounded-t-md transition-[height] duration-700 ease-out',
+                        'w-full rounded-t-lg transition-all ease-out',
                         isCurr
-                          ? 'bg-green-500 dark:bg-green-500'
+                          ? 'bg-linear-to-t from-green-600 to-green-400'
                           : 'bg-gray-100 dark:bg-gray-800 group-hover:bg-gray-200 dark:group-hover:bg-gray-700',
                       )}
-                      style={{ height: animated ? `${pct}%` : '0%' }}
+                      style={{
+                        height:          animated ? `${pct}%` : '0%',
+                        transitionDuration: '700ms',
+                        transitionDelay: animated ? `${animDelay}ms` : '0ms',
+                        minHeight:       animated && pct > 0 ? '4px' : '0',
+                      }}
                       aria-label={`${formatPeriod(d.period_month)}: ${display}`}
                     />
                   </div>
+
                   {/* Month label */}
                   <span className={cn(
-                    'text-[9px] font-medium',
+                    'text-[9px] font-semibold',
                     isCurr ? 'text-green-700 dark:text-green-400' : 'text-gray-400 dark:text-gray-500',
                   )}>
                     {label}
@@ -92,11 +119,11 @@ export const CollectionChart: React.FC<CollectionChartProps> = ({
             })}
           </div>
 
-          {/* Legend */}
+          {/* Legend + YTD */}
           <div className="flex items-center justify-between pt-3 border-t border-gray-50 dark:border-gray-800">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
-                <span className="w-2 h-2 rounded-sm bg-green-500 shrink-0" aria-hidden="true" />
+                <span className="w-2 h-2 rounded-sm bg-linear-to-t from-green-600 to-green-400 shrink-0" aria-hidden="true" />
                 Current month
               </div>
               <div className="flex items-center gap-1.5 text-[10px] text-gray-400">
@@ -104,8 +131,8 @@ export const CollectionChart: React.FC<CollectionChartProps> = ({
                 Previous months
               </div>
             </div>
-            <p className="text-[10px] text-gray-400 dark:text-gray-500">
-              Total: {formatNairaCompact(data.reduce((s, d) => s + d.total_collected_kobo, 0))} YTD
+            <p className="text-[10px] font-medium text-gray-500 dark:text-gray-400">
+              {formatNairaCompact(ytdTotal)} YTD
             </p>
           </div>
         </>

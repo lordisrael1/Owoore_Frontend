@@ -1,6 +1,5 @@
 'use client';
 import React from 'react';
-import type { Metadata } from 'next';
 import { useMemberPortal }  from '@/hooks/useMemberPortal';
 import { useMemberFunds }   from '@/hooks/useFunds';
 import { FundCard }         from '@/components/member/FundCard';
@@ -8,47 +7,106 @@ import { GivingSummary }    from '@/components/member/GivingSummary';
 import { PageLoader, CardSkeleton } from '@/components/ui/Spinner';
 import { EmptyState }       from '@/components/ui/EmptyState';
 import { formatNairaCompact, formatPeriod, currentPeriod } from '@/lib/format';
+import { cn } from '@/lib/cn';
 
 /**
  * app/portal/page.tsx — Member portal home.
- *
  * GET /me → profile + fund summaries
- * GET /orgs/:orgId/funds → fund type list (for fund cards)
- *
- * Layout:
- *   1. Welcome header — member name + total this month
- *   2. Fund cards      — tap to get NUBAN account number
- *   3. Giving summary  — pledge progress + deficit per fund
+ * GET /orgs/:orgId/funds → fund type list
  */
 
+const WaveEmoji: React.FC = () => {
+  const [waved, setWaved] = React.useState(false);
+  return (
+    <button
+      onClick={() => setWaved(true)}
+      className="inline-block select-none focus:outline-none"
+      title="Wave back!"
+      aria-label="Wave emoji"
+    >
+      <span
+        className={cn(
+          'text-2xl inline-block origin-bottom-right',
+          waved ? 'animate-[wiggle_.5s_ease-in-out]' : '',
+        )}
+        style={waved ? { animation: 'float .4s ease-in-out 2' } : {}}
+      >
+        👋
+      </span>
+    </button>
+  );
+};
+
 export default function PortalHomePage() {
-  const { member, org, fundSummaries, isLoading, totalPaid } = useMemberPortal();
+  const { member, fundSummaries, isLoading, totalPaid } = useMemberPortal();
   const { activeFunds, isLoading: fundsLoading } = useMemberFunds();
 
   if (isLoading) return <PageLoader message="Loading your giving summary…" />;
 
-  const period = currentPeriod();
+  const period     = currentPeriod();
+  const firstName  = member?.name?.split(' ')[0] ?? '';
+  const paidThisMonth = totalPaid > 0;
 
   return (
-    <div className="space-y-5 pb-24 animate-fade-in">
-      {/* Welcome header */}
-      <div>
-        <p className="text-xs text-gray-400 dark:text-gray-500 mb-0.5">{formatPeriod(period)}</p>
-        <h1 className="text-xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">
-          {member?.name ? `Hi, ${member.name.split(' ')[0]}` : 'Welcome'}
-        </h1>
-        {totalPaid > 0 && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-            {formatNairaCompact(totalPaid)} given this month · {member?.memberCode}
-          </p>
-        )}
+    <div className="space-y-6 pb-24 animate-fade-in">
+
+      {/* ── Welcome header ──────────────────────────────────────────────── */}
+      <div className="rounded-2xl bg-linear-to-br from-green-700 to-green-800 p-5 text-white relative overflow-hidden shadow-lg shadow-green-900/20">
+        {/* Background texture */}
+        <div
+          className="absolute inset-0 opacity-10 pointer-events-none"
+          style={{ background: 'radial-gradient(ellipse at top right, #86efac, transparent 60%)' }}
+          aria-hidden="true"
+        />
+
+        <div className="relative">
+          <p className="text-xs text-green-200/70 font-medium mb-1">{formatPeriod(period)}</p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight">
+                {firstName ? (
+                  <span className="flex items-center gap-2">
+                    Hi, {firstName} <WaveEmoji />
+                  </span>
+                ) : (
+                  'Welcome'
+                )}
+              </h1>
+              {paidThisMonth ? (
+                <p className="text-sm text-green-100/80 mt-1">
+                  <span className="text-white font-semibold">{formatNairaCompact(totalPaid)}</span>{' '}
+                  given this month
+                </p>
+              ) : (
+                <p className="text-sm text-green-100/60 mt-1">
+                  No giving recorded yet this month
+                </p>
+              )}
+            </div>
+            {member?.memberCode && (
+              <div className="shrink-0 text-right">
+                <p className="text-[10px] text-green-200/60 mb-0.5">Member</p>
+                <p className="text-xs font-mono font-semibold text-green-100 bg-white/10 px-2 py-1 rounded-lg border border-white/10">
+                  {member.memberCode}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
-      {/* Fund cards — tap to get NUBAN */}
+      {/* ── Fund cards ──────────────────────────────────────────────────── */}
       <section aria-label="Your giving accounts">
-        <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-          Tap a fund to get your account number
-        </h2>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            Tap a fund to pay
+          </h2>
+          {activeFunds.length > 0 && (
+            <span className="text-[10px] text-gray-400 dark:text-gray-600">
+              {activeFunds.length} fund{activeFunds.length !== 1 ? 's' : ''}
+            </span>
+          )}
+        </div>
 
         {fundsLoading ? (
           <div className="space-y-2.5">
@@ -61,26 +119,50 @@ export default function PortalHomePage() {
           />
         ) : (
           <div className="space-y-2.5">
-            {activeFunds.map((fund) => (
-              <FundCard
+            {activeFunds.map((fund, i) => (
+              <div
                 key={fund.id}
-                fund={fund}
-                summary={fundSummaries.find((s) => s.fund_type_id === fund.id)}
-              />
+                className="animate-fade-up"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <FundCard
+                  fund={fund}
+                  summary={fundSummaries.find((s) => s.fund_type_id === fund.id)}
+                />
+              </div>
             ))}
           </div>
         )}
       </section>
 
-      {/* Giving summary — pledge progress + deficits */}
+      {/* ── Giving summary ──────────────────────────────────────────────── */}
       {fundSummaries.length > 0 && (
         <section aria-label="Giving summary">
-          <h2 className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
+          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
             This month's summary
           </h2>
           <GivingSummary summaries={fundSummaries} />
         </section>
       )}
+
+      {/* ── How to pay hint ─────────────────────────────────────────────── */}
+      <div className="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-4">
+        <p className="text-xs font-semibold text-gray-700 dark:text-gray-300 mb-2">How to give</p>
+        <div className="space-y-2">
+          {[
+            'Tap any fund above to get your account number',
+            'Transfer from GTBank, OPay, Kuda, or any bank',
+            'You\'ll receive an email confirmation instantly',
+          ].map((step, i) => (
+            <div key={i} className="flex items-start gap-2.5">
+              <span className="w-5 h-5 rounded-full bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 text-[10px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                {i + 1}
+              </span>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">{step}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
