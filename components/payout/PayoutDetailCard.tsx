@@ -7,13 +7,11 @@ import type { PayoutRequest } from '@/lib/api/payouts.api';
 interface PayoutDetailCardProps {
   payout:    PayoutRequest;
   fundName?: string;
-  bankName?: string;
 }
 
 export const PayoutDetailCard: React.FC<PayoutDetailCardProps> = ({
   payout,
   fundName,
-  bankName,
 }) => (
   <Card>
     {/* Status + Amount */}
@@ -31,7 +29,9 @@ export const PayoutDetailCard: React.FC<PayoutDetailCardProps> = ({
     <dl className="space-y-3 text-sm">
       {[
         { label: 'Fund',        value: fundName ?? payout.fund_type_id },
-        { label: 'Destination', value: bankName ? `${bankName} · *${payout.bank_account_id?.slice(-4)}` : '—' },
+        { label: 'Destination', value: payout.bank_name && payout.account_number
+            ? `${payout.bank_name} · *${payout.account_number.slice(-4)}`
+            : '—' },
         { label: 'Purpose',     value: payout.purpose },
         { label: 'Requested',   value: formatDateTime(payout.created_at) },
         payout.executed_at && { label: 'Transferred', value: formatDateTime(payout.executed_at) },

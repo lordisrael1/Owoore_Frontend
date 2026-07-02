@@ -3,7 +3,6 @@ import React from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { usePayoutDetail } from '@/hooks/usePayouts';
-import { useBankList }     from '@/hooks/useBankList';
 import { useFunds }        from '@/hooks/useFunds';
 import { PayoutDetailCard } from '@/components/payout/PayoutDetailCard';
 import { ApprovalTimeline } from '@/components/payout/ApprovalTimeline';
@@ -11,7 +10,7 @@ import { Button }           from '@/components/ui/Button';
 import { Badge }            from '@/components/ui/Badge';
 import { useToast }         from '@/components/ui/Toast';
 import { PageLoader }       from '@/components/ui/Spinner';
-import { formatNaira, formatDateTime } from '@/lib/format';
+import { formatDateTime }  from '@/lib/format';
 import type { ApprovalStep } from '@/components/payout/ApprovalTimeline';
 
 /**
@@ -22,7 +21,6 @@ export default function PayoutDetailPage() {
   const { id }   = useParams();
   const { success, error } = useToast();
   const { payout, isLoading, cancel } = usePayoutDetail(id as string);
-  const { getBankName } = useBankList();
   const { getFundById } = useFunds();
 
   const [cancelling, setCancelling] = React.useState(false);
@@ -30,8 +28,7 @@ export default function PayoutDetailPage() {
   if (isLoading) return <PageLoader message="Loading payout…" />;
   if (!payout)   return null;
 
-  const fund     = getFundById(payout.fund_type_id);
-  const bankName = getBankName(payout.bank_account_id ?? '');
+  const fund = getFundById(payout.fund_type_id);
 
   const handleCancel = async () => {
     setCancelling(true);
@@ -69,7 +66,9 @@ export default function PayoutDetailPage() {
     },
   ];
 
-  const isTerminal = ['TRANSFERRED', 'DECLINED', 'EXPIRED', 'FAILED', 'CANCELLED'].includes(payout.status);
+  // APPROVED = auto-approved (below threshold) or all signatories approved — no further action needed
+  // TRANSFERRING = Nomba transfer fired, waiting for webhook
+  const isTerminal = ['APPROVED', 'TRANSFERRING', 'TRANSFERRED', 'DECLINED', 'EXPIRED', 'FAILED', 'CANCELLED'].includes(payout.status);
 
   return (
     <div className="max-w-2xl animate-fade-in space-y-4">
@@ -87,7 +86,6 @@ export default function PayoutDetailPage() {
           <PayoutDetailCard
             payout={payout}
             fundName={fund?.name}
-            bankName={bankName}
           />
 
           {/* Transfer error */}

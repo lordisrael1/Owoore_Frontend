@@ -29,6 +29,10 @@ export interface PayoutRequest {
   expires_at:          string;
   created_at:          string;
   updated_at:          string;
+  // Joined from org_bank_accounts (detail view only)
+  account_number:      string | null;
+  bank_name:           string | null;
+  recipient_name:      string | null;
 }
 
 export interface InitiatePayoutInput {
