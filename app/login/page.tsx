@@ -81,6 +81,18 @@ export default function LoginPage() {
 
       router.push('/dashboard');
     } catch (err: any) {
+      if (err.code === 'EMAIL_NOT_VERIFIED') {
+        const orgSlug = err.details?.orgSlug as string | undefined;
+        if (orgSlug) {
+          const params = new URLSearchParams({
+            email:    email.trim().toLowerCase(),
+            org_slug: orgSlug,
+            next:     '/dashboard',
+          });
+          router.push(`/verify-email?${params.toString()}`);
+          return;
+        }
+      }
       error('Login failed', err.message ?? 'Check your email and password');
       setPassword(''); // clear password on failure
     } finally {

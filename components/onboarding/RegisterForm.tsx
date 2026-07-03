@@ -5,18 +5,58 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { orgsApi } from '@/lib/api/orgs.api';
-import { authApi } from '@/lib/api/auth.api';
 import { useOrgStore } from '@/store/orgStore';
-import { useAuthStore } from '@/store/authStore';
 
 const ACCEPTED = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
 const MAX_SIZE_MB = 2;
+
+const PASSWORD_RULES = [
+  { id: 'length',  label: 'At least 8 characters',         test: (p: string) => p.length >= 8          },
+  { id: 'upper',   label: 'One uppercase letter (A–Z)',     test: (p: string) => /[A-Z]/.test(p)        },
+  { id: 'lower',   label: 'One lowercase letter (a–z)',     test: (p: string) => /[a-z]/.test(p)        },
+  { id: 'number',  label: 'One number (0–9)',               test: (p: string) => /[0-9]/.test(p)        },
+  { id: 'special', label: 'One special character (!@#$…)',  test: (p: string) => /[^A-Za-z0-9]/.test(p) },
+];
+
+function PasswordRules({ password }: { password: string }) {
+  if (!password) return null;
+  return (
+    <ul className="mt-2 space-y-1">
+      {PASSWORD_RULES.map((rule) => {
+        const passed = rule.test(password);
+        return (
+          <li key={rule.id} className="flex items-center gap-2">
+            <span
+              className={`flex items-center justify-center w-4 h-4 rounded-full shrink-0 transition-colors ${
+                passed
+                  ? 'bg-green-500 text-white'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600'
+              }`}
+            >
+              {passed ? (
+                <svg className="w-2.5 h-2.5" viewBox="0 0 10 10" fill="none">
+                  <path d="M2 5l2.5 2.5L8 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : (
+                <svg className="w-1.5 h-1.5" viewBox="0 0 6 6" fill="currentColor">
+                  <circle cx="3" cy="3" r="3"/>
+                </svg>
+              )}
+            </span>
+            <span className={`text-[11px] transition-colors ${passed ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'}`}>
+              {rule.label}
+            </span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 export const RegisterForm: React.FC = () => {
   const router = useRouter();
   const { error } = useToast();
   const setOrg = useOrgStore((s) => s.setOrg);
-  const authStore = useAuthStore();
   const [loading, setLoading] = React.useState(false);
   const [logoFile, setLogoFile] = React.useState<File | null>(null);
   const [logoPreview, setLogoPreview] = React.useState<string | null>(null);
@@ -46,18 +86,20 @@ export const RegisterForm: React.FC = () => {
     setLogoPreview(URL.createObjectURL(f));
   };
 
+  const passwordValid = PASSWORD_RULES.every((r) => r.test(form.admin_password));
+
   const validate = (): boolean => {
     const errs: Partial<typeof form> = {};
-    if (!form.church_name.trim())         errs.church_name    = 'Church name is required';
-    if (!form.admin_name.trim())          errs.admin_name     = 'Your name is required';
-    if (!form.admin_email.includes('@'))  errs.admin_email    = 'Valid email required';
-    if (form.admin_password.length < 8)  errs.admin_password = 'Password must be at least 8 characters';
+    if (!form.church_name.trim())        errs.church_name    = 'Church name is required';
+    if (!form.admin_name.trim())         errs.admin_name     = 'Your name is required';
+    if (!form.admin_email.includes('@')) errs.admin_email    = 'Valid email required';
+    if (!passwordValid)                  errs.admin_password = 'Password does not meet all requirements';
     if (form.admin_password !== form.confirm_password) errs.confirm_password = 'Passwords do not match';
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!validate()) return;
 
@@ -71,20 +113,6 @@ export const RegisterForm: React.FC = () => {
         logo:           logoFile ?? undefined,
       });
 
-      const loginResult = await authApi.adminLogin({
-        email:    form.admin_email.trim().toLowerCase(),
-        password: form.admin_password,
-      });
-
-      document.cookie = `owoore_admin_token=${localStorage.getItem('owoore_admin_token')}; path=/; SameSite=Lax; max-age=${8 * 3600}`;
-
-      authStore.setAdmin(localStorage.getItem('owoore_admin_token') ?? '', {
-        id:    loginResult.admin.id,
-        email: loginResult.admin.email,
-        role:  loginResult.admin.role,
-        orgId: loginResult.admin.orgId,
-      });
-
       setOrg({
         orgId:   regResult.org.id,
         name:    regResult.org.name,
@@ -92,8 +120,15 @@ export const RegisterForm: React.FC = () => {
         logoUrl: regResult.org.logo_url,
       });
 
-      // Logo is uploaded with POST /orgs (req.file) — no separate upload step needed
-      router.push('/setup');
+      // Admin isn't verified yet — org creation already sent the first OTP.
+      // Verify it before they can sign in.
+      const params = new URLSearchParams({
+        email:    form.admin_email.trim().toLowerCase(),
+        org_slug: regResult.org.slug,
+        next:     '/setup',
+        sent:     '1',
+      });
+      router.push(`/verify-email?${params.toString()}`);
     } catch (err: any) {
       error('Registration failed', err.message);
     } finally {
@@ -172,15 +207,21 @@ export const RegisterForm: React.FC = () => {
         error={errors.admin_email}
         required
       />
-      <Input
-        label="Password"
-        type="password"
-        value={form.admin_password}
-        onChange={set('admin_password')}
-        placeholder="At least 8 characters"
-        error={errors.admin_password}
-        required
-      />
+
+      {/* Password + live rules */}
+      <div>
+        <Input
+          label="Password"
+          type="password"
+          value={form.admin_password}
+          onChange={set('admin_password')}
+          placeholder="Create a strong password"
+          error={errors.admin_password}
+          required
+        />
+        <PasswordRules password={form.admin_password} />
+      </div>
+
       <Input
         label="Confirm password"
         type="password"

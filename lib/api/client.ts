@@ -25,11 +25,13 @@ const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com
 export class ApiError extends Error {
   public readonly code: string;
   public readonly status: number;
+  public readonly details?: Record<string, unknown>;
 
-  constructor(message: string, code: string, status: number) {
+  constructor(message: string, code: string, status: number, details?: Record<string, unknown>) {
     super(message);
-    this.code   = code;
-    this.status = status;
+    this.code    = code;
+    this.status  = status;
+    this.details = details;
     Object.setPrototypeOf(this, ApiError.prototype);
   }
 }
@@ -203,6 +205,7 @@ export async function apiRequest<T = unknown>(
       err.message ?? json.message ?? `Request failed (${response.status})`,
       err.code    ?? 'API_ERROR',
       response.status,
+      err.details,
     );
   }
 

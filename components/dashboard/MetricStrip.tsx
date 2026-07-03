@@ -130,6 +130,11 @@ export const MetricStrip: React.FC<MetricStripProps> = ({
   const members      = data?.active_members                ?? 0;
   const pending      = data?.pending_payouts_kobo          ?? 0;
   const deficitCount = data?.deficit_member_count          ?? 0;
+  const txCount      = data?.total_transactions            ?? 0;
+
+  // deficit_member_count is only non-zero when pledge/campaign funds exist.
+  // When all giving is voluntary, repurpose the card to show total transactions.
+  const hasPledgeDeficit = deficitCount > 0;
 
   return (
     <div
@@ -160,15 +165,27 @@ export const MetricStrip: React.FC<MetricStripProps> = ({
         color="amber"
       />
 
-      <MetricCard
-        label="Members with deficit"
-        value={deficitCount}
-        delta={deficitCount > 0 ? `${deficitCount} need follow-up` : 'All up to date'}
-        deltaDir={deficitCount > 0 ? 'down' : 'neutral'}
-        icon={<AlertIcon />}
-        color={deficitCount > 0 ? 'red' : 'gray'}
-        className="col-span-2 sm:col-span-1"
-      />
+      {hasPledgeDeficit ? (
+        <MetricCard
+          label="Members with deficit"
+          value={deficitCount}
+          delta={`${deficitCount} need follow-up`}
+          deltaDir="down"
+          icon={<AlertIcon />}
+          color="red"
+          className="col-span-2 sm:col-span-1"
+        />
+      ) : (
+        <MetricCard
+          label="Total payments"
+          value={txCount.toLocaleString()}
+          delta={txCount > 0 ? 'All time' : 'None yet'}
+          deltaDir="neutral"
+          icon={<svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M3 6h10M3 10h10M6.5 3l-1 10M10.5 3l-1 10" strokeLinecap="round"/></svg>}
+          color="gray"
+          className="col-span-2 sm:col-span-1"
+        />
+      )}
     </div>
   );
 };

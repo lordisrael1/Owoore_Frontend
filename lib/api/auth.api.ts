@@ -44,6 +44,12 @@ export interface AdminLoginResponse {
   };
 }
 
+export interface VerifyAdminEmailInput {
+  email:    string;
+  code:     string;
+  org_slug: string;
+}
+
 export const authApi = {
   /**
    * sendOtp — POST /auth/send-otp
@@ -73,6 +79,19 @@ export const authApi = {
    */
   adminLogin: async (input: AdminLoginInput): Promise<AdminLoginResponse> => {
     const data = await api.post<AdminLoginResponse>('/auth/admin/login', input, { isPublic: true });
+    setToken('admin', data.token);
+    return data;
+  },
+
+  /**
+   * verifyAdminEmail — POST /auth/admin/verify-email
+   * Confirms the OTP sent to a self-registered admin's email, marks the
+   * account verified, and logs them in — same UX as the member OTP flow.
+   * Used both right after registration and when a login attempt comes
+   * back with EMAIL_NOT_VERIFIED.
+   */
+  verifyAdminEmail: async (input: VerifyAdminEmailInput): Promise<AdminLoginResponse> => {
+    const data = await api.post<AdminLoginResponse>('/auth/admin/verify-email', input, { isPublic: true });
     setToken('admin', data.token);
     return data;
   },

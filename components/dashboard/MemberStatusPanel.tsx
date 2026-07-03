@@ -23,11 +23,17 @@ export const MemberStatusPanel: React.FC<MemberStatusPanelProps> = ({
 
   const items = members?.slice(0, 6) ?? [];
 
+  // Determine panel intent: if any row has an expected amount, we're tracking pledges.
+  // Otherwise we're just showing who gave voluntarily this period.
+  const hasPledge = items.some((m) => m.expected_kobo != null);
+  const title    = hasPledge ? 'Member status' : 'Recent givers';
+  const subtitle = hasPledge ? (period ?? 'This period') : `${period ?? 'This period'} · voluntary giving`;
+
   return (
     <Card>
       <CardHeader
-        title="Member status"
-        subtitle={period ?? 'This period'}
+        title={title}
+        subtitle={subtitle}
         action={
           <Link href="/dashboard/members" className="text-xs text-green-700 dark:text-green-400 hover:underline">
             All members →
@@ -36,7 +42,11 @@ export const MemberStatusPanel: React.FC<MemberStatusPanelProps> = ({
       />
 
       {items.length === 0 ? (
-        <EmptyState title="No member data" message="Members appear here after their first payment." compact />
+        <EmptyState
+          title="No activity yet"
+          message="Members appear here after their first payment."
+          compact
+        />
       ) : (
         <div className="space-y-0 divide-y divide-gray-50 dark:divide-gray-800">
           {items.map((m) => (
@@ -54,11 +64,9 @@ export const MemberStatusPanel: React.FC<MemberStatusPanelProps> = ({
                 <p className="text-xs font-medium text-gray-900 dark:text-gray-100">
                   {m.total_paid_display ?? formatNairaCompact(Number(m.total_paid_kobo))}
                 </p>
-                <Badge
-                  status={m.payment_status}
-                  size="xs"
-                  className="mt-0.5"
-                />
+                {hasPledge && (
+                  <Badge status={m.payment_status} size="xs" className="mt-0.5" />
+                )}
               </div>
             </div>
           ))}

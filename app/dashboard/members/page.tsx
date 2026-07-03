@@ -1,5 +1,4 @@
 'use client';
-import React from 'react';
 import Link  from 'next/link';
 import { useMembers, useMemberStatusTable } from '@/hooks/useMember';
 import { useUiStore } from '@/store/uiStore';
@@ -33,12 +32,11 @@ export default function MembersPage() {
   const {
     rows, isLoading: statusLoading,
     statusFilter, setStatusFilter,
-    fundFilter, setFundFilter,
   } = useMemberStatusTable(activePeriod);
 
   const {
     members, total, isLoading: listLoading,
-    offset, limit, currentPage, totalPages,
+    offset, limit,
     nextPage, prevPage,
   } = useMembers();
 
@@ -170,27 +168,41 @@ export default function MembersPage() {
         </div>
       </div>
 
-      {/* ── Member Status Table ── */}
+      {/* ── Payment Activity Table ── */}
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800">
         <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-gray-800">
           <div>
-            <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">Payment status</h2>
-            <p className="text-xs text-gray-400 mt-0.5">{activePeriod} · who paid, who owes</p>
+            <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+              {rows.some((r) => r.expected_kobo != null) ? 'Payment status' : 'Giving activity'}
+            </h2>
+            <p className="text-xs text-gray-400 mt-0.5">
+              {activePeriod} ·{' '}
+              {rows.some((r) => r.expected_kobo != null)
+                ? 'pledge tracking — who paid, who owes'
+                : 'voluntary giving recorded this period'}
+            </p>
           </div>
-          <div className="w-36">
-            <Select
-              options={STATUS_OPTIONS}
-              value={statusFilter}
-              onChange={setStatusFilter}
-              placeholder="All statuses"
-            />
-          </div>
+          {rows.length > 0 && (
+            <div className="w-36">
+              <Select
+                options={STATUS_OPTIONS}
+                value={statusFilter}
+                onChange={setStatusFilter}
+                placeholder="All statuses"
+              />
+            </div>
+          )}
         </div>
         <div className="overflow-x-auto">
           {statusLoading ? (
             <div className="p-4 space-y-2"><CardSkeleton /><CardSkeleton /></div>
           ) : rows.length === 0 ? (
-            <EmptyState title="No member data" message="Members appear after their first payment." compact className="py-8" />
+            <EmptyState
+              title="No giving recorded"
+              message="Payments will appear here once members transfer to their account numbers."
+              compact
+              className="py-8"
+            />
           ) : (
             <Table
               data={rows}
