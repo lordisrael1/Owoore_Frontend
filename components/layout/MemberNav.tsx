@@ -20,7 +20,6 @@ const ChurchIcon = () => (
 const navLinks = [
   { href: '/portal',          label: 'Overview',      exact: true },
   { href: '/portal/accounts', label: 'My accounts' },
-  { href: '/portal/history',  label: 'Giving history' },
 ];
 
 export const MemberNav: React.FC<MemberNavProps> = ({

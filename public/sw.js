@@ -4,7 +4,6 @@
  * Cache strategy:
  *   - App shell (HTML, JS, CSS) → Cache First with network fallback
  *   - API: /me/accounts (NUBAN numbers) → Stale-While-Revalidate (show cached, update in bg)
- *   - API: /me/giving-history → Network First, fallback to cache
  *   - API: /me → Network First (always want fresh fund summaries)
  *   - Nomba webhooks → Network Only (never cache payment events)
  *
@@ -20,7 +19,6 @@ const OFFLINE_URL    = '/portal/offline';
 const SHELL_ASSETS = [
   '/portal',
   '/portal/accounts',
-  '/portal/history',
   '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
@@ -29,7 +27,6 @@ const SHELL_ASSETS = [
 // API routes to cache (relative to API base)
 const CACHEABLE_API_PATTERNS = [
   /\/api\/v1\/me\/accounts/,
-  /\/api\/v1\/me\/giving-history/,
   /\/api\/v1\/orgs\/[^/]+$/, // org details (name, logo)
 ];
 

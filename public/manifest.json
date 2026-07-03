@@ -67,13 +67,6 @@
       "description": "View your NUBAN account numbers",
       "url": "/portal/accounts",
       "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
-    },
-    {
-      "name": "Giving History",
-      "short_name": "History",
-      "description": "View your giving history",
-      "url": "/portal/history",
-      "icons": [{ "src": "/icons/icon-96.png", "sizes": "96x96" }]
     }
   ],
   "screenshots": [

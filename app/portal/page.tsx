@@ -3,10 +3,9 @@ import React from 'react';
 import { useMemberPortal }  from '@/hooks/useMemberPortal';
 import { useMemberFunds }   from '@/hooks/useFunds';
 import { FundCard }         from '@/components/member/FundCard';
-import { GivingSummary }    from '@/components/member/GivingSummary';
 import { PageLoader, CardSkeleton } from '@/components/ui/Spinner';
 import { EmptyState }       from '@/components/ui/EmptyState';
-import { formatNairaCompact, formatPeriod, currentPeriod } from '@/lib/format';
+import { formatPeriod, currentPeriod } from '@/lib/format';
 import { cn } from '@/lib/cn';
 
 /**
@@ -38,14 +37,13 @@ const WaveEmoji: React.FC = () => {
 };
 
 export default function PortalHomePage() {
-  const { member, fundSummaries, isLoading, totalPaid } = useMemberPortal();
+  const { member, fundSummaries, isLoading } = useMemberPortal();
   const { activeFunds, isLoading: fundsLoading } = useMemberFunds();
 
   if (isLoading) return <PageLoader message="Loading your giving summary…" />;
 
   const period     = currentPeriod();
   const firstName  = member?.name?.split(' ')[0] ?? '';
-  const paidThisMonth = totalPaid > 0;
 
   return (
     <div className="space-y-6 pb-24 animate-fade-in">
@@ -72,16 +70,6 @@ export default function PortalHomePage() {
                   'Welcome'
                 )}
               </h1>
-              {paidThisMonth ? (
-                <p className="text-sm text-green-100/80 mt-1">
-                  <span className="text-white font-semibold">{formatNairaCompact(totalPaid)}</span>{' '}
-                  given this month
-                </p>
-              ) : (
-                <p className="text-sm text-green-100/60 mt-1">
-                  No giving recorded yet this month
-                </p>
-              )}
             </div>
             {member?.memberCode && (
               <div className="shrink-0 text-right">
@@ -134,16 +122,6 @@ export default function PortalHomePage() {
           </div>
         )}
       </section>
-
-      {/* ── Giving summary ──────────────────────────────────────────────── */}
-      {fundSummaries.length > 0 && (
-        <section aria-label="Giving summary">
-          <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-            This month's summary
-          </h2>
-          <GivingSummary summaries={fundSummaries} />
-        </section>
-      )}
 
       {/* ── How to pay hint ─────────────────────────────────────────────── */}
       <div className="rounded-xl bg-gray-50 dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-4">
