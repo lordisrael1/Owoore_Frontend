@@ -28,8 +28,8 @@ import type { TransactionRow } from '@/components/dashboard/RecentTransactions';
 export default function DashboardPage() {
   const { activePeriod } = useUiStore();
   const {
-    summary, funds, payoutHistory,
-    summaryLoading, fundLoading, isLoading,
+    summary, funds, payoutHistory, activity,
+    summaryLoading, fundLoading, activityLoading, isLoading,
   } = useDashboard(activePeriod);
 
   const { members, isLoading: membersLoading } = useMemberStatus(activePeriod);
@@ -80,7 +80,7 @@ export default function DashboardPage() {
             period={activePeriod}
           />
           <QuickActions />
-          <ActivityFeed />
+          <ActivityFeed items={activity} loading={activityLoading} />
         </div>
       </div>
     </div>

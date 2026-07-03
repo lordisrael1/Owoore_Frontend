@@ -60,6 +60,15 @@ export function useDashboard(period?: string) {
     { refreshInterval: REFRESH_INTERVAL },
   );
 
+  const {
+    data:    activity,
+    isLoading: activityLoading,
+  } = useSWR(
+    'dashboard/activity',
+    () => dashboardApi.activity(15),
+    { refreshInterval: REFRESH_INTERVAL, revalidateOnFocus: true },
+  );
+
   const refresh = async () => {
     await Promise.all([mutateSummary(), mutateFunds()]);
   };
@@ -69,11 +78,13 @@ export function useDashboard(period?: string) {
     summary:      summaryData,
     funds:        fundData ?? [],
     payoutHistory: payoutHistory ?? [],
+    activity:     activity ?? [],
 
     // Loading states — granular so each panel can show its own skeleton
     summaryLoading,
     fundLoading,
     payoutLoading,
+    activityLoading,
     isLoading: summaryLoading || fundLoading,
 
     // Errors

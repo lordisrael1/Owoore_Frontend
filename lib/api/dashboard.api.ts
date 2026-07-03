@@ -65,6 +65,15 @@ export interface PayoutHistoryItem {
   amount_display: string;
 }
 
+export interface ActivityFeedItem {
+  id:     string;
+  type:   'payment' | 'payout' | 'member' | 'campaign' | 'system';
+  title:  string;
+  desc:   string;
+  time:   string;
+  action: string;
+}
+
 export const dashboardApi = {
   /**
    * summary — GET /dashboard/summary
@@ -103,6 +112,17 @@ export const dashboardApi = {
   payoutHistory: (limit = 20) =>
     api.get<PayoutHistoryItem[]>(
       `/dashboard/payout-history?limit=${limit}`,
+      { tokenType: 'admin' },
+    ),
+
+  /**
+   * activity — GET /dashboard/activity
+   * Recent audit_log events pre-shaped for <ActivityFeed>:
+   * payments in, members joining, payouts moving, invites sent.
+   */
+  activity: (limit = 15) =>
+    api.get<ActivityFeedItem[]>(
+      `/dashboard/activity?limit=${limit}`,
       { tokenType: 'admin' },
     ),
 };
