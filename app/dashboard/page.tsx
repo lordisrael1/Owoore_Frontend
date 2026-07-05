@@ -62,7 +62,7 @@ export default function DashboardPage() {
         {/* LEFT: 2/3 width */}
         <div className="xl:col-span-2 space-y-4">
           <CollectionChart trend={summary?.trend} loading={summaryLoading} />
-          <FundPerformance funds={funds} loading={fundLoading} />
+          <FundPerformance funds={funds} loading={fundLoading} period={activePeriod} />
           <RecentTransactions transactions={recentTx} loading={isLoading} />
         </div>
 

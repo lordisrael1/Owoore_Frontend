@@ -27,6 +27,8 @@ export interface FundBreakdownItem {
   fund_type_id:         string;
   fund_name:            string;
   kind:                 'RECURRING' | 'CAMPAIGN';
+  is_shared_va:         boolean;   // one org-wide VA (e.g. Offering) — no per-member tracking
+  is_anonymous_only:    boolean;   // Anonymous Giving — names never recorded
   total_collected_kobo: number;
   total_paid_out_kobo:  number;
   total_fees_kobo:      number;
