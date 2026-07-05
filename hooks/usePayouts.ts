@@ -91,6 +91,27 @@ export function usePayoutDetail(payoutId: string | null) {
 }
 
 /**
+ * usePayoutFundBalances — per-fund available balance for the initiate form.
+ * Refreshes on focus so the admin sees a fresh balance after a transfer settles.
+ */
+export function usePayoutFundBalances() {
+  const { data, error, isLoading, mutate } = useSWR(
+    'payouts/fund-balances',
+    () => payoutsApi.getFundBalances(),
+    { revalidateOnFocus: true },
+  );
+
+  return {
+    fundBalances:    data?.funds ?? [],
+    transferFeeKobo: data?.transfer_fee_kobo ?? 2_000, // ₦20 fallback — matches backend default
+    isLoading,
+    error,
+    hasError:        !!error,
+    refresh:         mutate,
+  };
+}
+
+/**
  * useBankList — cached bank list from Nomba via backend.
  * Used in the initiate payout form bank selector.
  * SWR cache = no repeat fetches across the session.

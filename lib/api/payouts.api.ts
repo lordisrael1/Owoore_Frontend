@@ -56,6 +56,20 @@ export interface BankLookupResult {
   bankName:      string;
 }
 
+export interface PayoutFundBalance {
+  fund_type_id:      string;
+  fund_name:         string;
+  kind:              'RECURRING' | 'CAMPAIGN';
+  is_anonymous_only: boolean;
+  available_kobo:    number;
+  available_display: string;
+}
+
+export interface PayoutFundBalances {
+  transfer_fee_kobo: number;
+  funds:             PayoutFundBalance[];
+}
+
 export interface PayoutListFilters {
   status?: PayoutStatus;
   limit?:  number;
@@ -104,6 +118,15 @@ export const payoutsApi = {
    */
   cancel: (id: string) =>
     api.delete<{ success: boolean }>(`/payouts/${id}`, { tokenType: 'admin' }),
+
+  /**
+   * getFundBalances — GET /payouts/fund-balances
+   * All-time available balance per active fund (including Anonymous Giving),
+   * plus the Nomba transfer fee. This is the exact balance the backend checks
+   * when a payout is initiated — the initiate form shows it per fund.
+   */
+  getFundBalances: () =>
+    api.get<PayoutFundBalances>('/payouts/fund-balances', { tokenType: 'admin' }),
 
   /**
    * getBankList — GET /banks

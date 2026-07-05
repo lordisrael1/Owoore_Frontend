@@ -2,21 +2,32 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useFunds }     from '@/hooks/useFunds';
-import { useBankList }  from '@/hooks/useBankList';
+import { usePayoutFundBalances, useBankList } from '@/hooks/usePayouts';
 import { InitiatePayoutForm } from '@/components/payout/InitiatePayoutForm';
-import { PageLoader }   from '@/components/ui/Spinner';
+import { PageLoader } from '@/components/ui/Spinner';
+import { Button } from '@/components/ui/Button';
 
 /**
  * app/dashboard/payouts/new/page.tsx — Initiate a payout request.
  * POST /payouts → bank lookup + multi-step form
+ *
+ * Funds come from GET /payouts/fund-balances (not the fund-types list) so the
+ * form can show what's actually available to disburse per fund — including
+ * Anonymous Giving, which is hidden from member-facing fund lists but is
+ * still payable out.
  */
 export default function NewPayoutPage() {
-  const router   = useRouter();
-  const { activeFunds, isLoading: fundsLoading } = useFunds();
-  const { banks, isLoading: banksLoading }        = useBankList();
+  const router = useRouter();
+  const {
+    fundBalances,
+    transferFeeKobo,
+    isLoading: balancesLoading,
+    hasError:  balancesError,
+    refresh:   refreshBalances,
+  } = usePayoutFundBalances();
+  const { banks, isLoading: banksLoading } = useBankList();
 
-  if (fundsLoading || banksLoading) return <PageLoader message="Loading payout form…" />;
+  if (balancesLoading || banksLoading) return <PageLoader message="Loading payout form…" />;
 
   return (
     <div className="max-w-lg animate-fade-in">
@@ -32,11 +43,23 @@ export default function NewPayoutPage() {
         <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
           Transfers above the threshold require multi-signatory approval before funds move.
         </p>
-        <InitiatePayoutForm
-          funds={activeFunds}
-          banks={banks}
-          onSuccess={(payoutId) => router.push(`/dashboard/payouts/${payoutId}`)}
-        />
+        {balancesError ? (
+          <div className="text-center py-6 space-y-3">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Couldn't load your fund balances.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => refreshBalances()}>
+              Try again
+            </Button>
+          </div>
+        ) : (
+          <InitiatePayoutForm
+            fundBalances={fundBalances}
+            transferFeeKobo={transferFeeKobo}
+            banks={banks}
+            onSuccess={(payoutId) => router.push(`/dashboard/payouts/${payoutId}`)}
+          />
+        )}
       </div>
     </div>
   );
