@@ -23,6 +23,7 @@ type FormStep = 'fund' | 'bank' | 'amount' | 'confirm';
 const PURPOSE_MIN = 5;
 const PURPOSE_MAX = 500;
 const AMOUNT_MAX_KOBO = 100_000_000; // ₦1,000,000 — mirrors payout.validator.ts
+const TRANSFER_FEE_KOBO = 2_000; // ₦20 flat Nomba transfer fee, deducted with the amount
 
 export const InitiatePayoutForm: React.FC<InitiatePayoutFormProps> = ({
   funds,
@@ -160,6 +161,18 @@ export const InitiatePayoutForm: React.FC<InitiatePayoutFormProps> = ({
             error={amountError}
             hint={!amountError && amountKobo > 0 ? `= ${formatNaira(amountKobo)}` : undefined}
           />
+          {amountKobo > 0 && !amountTooHigh && (
+            <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-3.5 space-y-1.5 text-xs">
+              <div className="flex justify-between gap-3">
+                <span className="text-gray-400 dark:text-gray-500">Transfer fee</span>
+                <span className="text-gray-900 dark:text-gray-100">{formatNaira(TRANSFER_FEE_KOBO)}</span>
+              </div>
+              <div className="flex justify-between gap-3 font-medium">
+                <span className="text-gray-500 dark:text-gray-400">Total deducted from fund</span>
+                <span className="text-gray-900 dark:text-gray-100">{formatNaira(amountKobo + TRANSFER_FEE_KOBO)}</span>
+              </div>
+            </div>
+          )}
           <Input
             label="Purpose"
             value={purpose}
@@ -186,15 +199,20 @@ export const InitiatePayoutForm: React.FC<InitiatePayoutFormProps> = ({
           <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 space-y-3">
             <p className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payout summary</p>
             {[
-              ['Fund',        selectedFund?.name ?? fundId],
-              ['Amount',      formatNaira(amountKobo)],
-              ['To',          `${verified?.accountName} · ${verified?.bankName}`],
-              ['Account',     verified?.accountNumber ?? ''],
-              ['Purpose',     purpose],
+              ['Fund',           selectedFund?.name ?? fundId],
+              ['Amount',         formatNaira(amountKobo)],
+              ['Transfer fee',   formatNaira(TRANSFER_FEE_KOBO)],
+              ['Total deducted', formatNaira(amountKobo + TRANSFER_FEE_KOBO)],
+              ['To',             `${verified?.accountName} · ${verified?.bankName}`],
+              ['Account',        verified?.accountNumber ?? ''],
+              ['Purpose',        purpose],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between gap-3 text-xs">
                 <span className="text-gray-400 dark:text-gray-500 shrink-0">{k}</span>
-                <span className="text-gray-900 dark:text-gray-100 text-right">{v}</span>
+                <span className={cn(
+                  'text-gray-900 dark:text-gray-100 text-right',
+                  k === 'Total deducted' && 'font-medium',
+                )}>{v}</span>
               </div>
             ))}
           </div>

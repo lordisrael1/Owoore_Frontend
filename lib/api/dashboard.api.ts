@@ -3,6 +3,7 @@ import { api } from './client';
 export interface DashboardSummary {
   total_collected_all_time_kobo: number;
   total_paid_out_all_time_kobo:  number;
+  total_fees_all_time_kobo:      number;
   available_balance_kobo:        number;
   pending_payouts_kobo:          number;
   active_members:                number;
@@ -12,6 +13,7 @@ export interface DashboardSummary {
   total_collected_display:       string;
   available_display:             string;
   pending_payouts_display:       string;
+  total_fees_display:            string;
   trend: Array<{
     period_month:         string;
     total_collected_kobo: number;
@@ -27,11 +29,13 @@ export interface FundBreakdownItem {
   kind:                 'RECURRING' | 'CAMPAIGN';
   total_collected_kobo: number;
   total_paid_out_kobo:  number;
+  total_fees_kobo:      number;
   soft_lock_kobo:       number;
   available_kobo:       number;
   member_count_paid:    number;
   total_transactions:   number;
   collected_display:    string;
+  fees_display:         string;
   available_display:    string;
 }
 
