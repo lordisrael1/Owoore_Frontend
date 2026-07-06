@@ -3,9 +3,11 @@ import React, { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Input }    from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Button }   from '@/components/ui/Button';
 import { useToast } from '@/components/ui/Toast';
 import { authApi }  from '@/lib/api/auth.api';
+import { cn }       from '@/lib/cn';
 
 /**
  * app/forgot-password/page.tsx — Admin/treasurer password reset.
@@ -17,6 +19,13 @@ import { authApi }  from '@/lib/api/auth.api';
  * The backend never reveals whether the email has an account, so step 2 is
  * always shown after a send — same UX either way.
  */
+
+const PASSWORD_RULES: Array<{ label: string; test: (p: string) => boolean }> = [
+  { label: 'At least 8 characters',      test: (p) => p.length >= 8 },
+  { label: 'An uppercase letter (A–Z)',  test: (p) => /[A-Z]/.test(p) },
+  { label: 'A lowercase letter (a–z)',   test: (p) => /[a-z]/.test(p) },
+  { label: 'A number (0–9)',             test: (p) => /\d/.test(p) },
+];
 
 function ForgotPasswordForm() {
   const router = useRouter();
@@ -54,7 +63,8 @@ function ForgotPasswordForm() {
     evt.preventDefault();
     const e: typeof errors = {};
     if (!/^\d{6}$/.test(code.trim()))  e.code     = 'Enter the 6-digit code from your email';
-    if (password.length < 8)           e.password = 'At least 8 characters';
+    if (!PASSWORD_RULES.every((r) => r.test(password)))
+                                       e.password = "Password doesn't meet all the requirements below";
     if (confirm !== password)          e.confirm  = 'Passwords do not match';
     setErrors(e);
     if (Object.keys(e).length > 0) return;
@@ -125,9 +135,8 @@ function ForgotPasswordForm() {
                 autoFocus
                 required
               />
-              <Input
+              <PasswordInput
                 label="New password"
-                type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="At least 8 characters"
@@ -135,13 +144,41 @@ function ForgotPasswordForm() {
                 autoComplete="new-password"
                 required
               />
-              <Input
+              {/* Live requirements checklist */}
+              <ul className="space-y-1 -mt-1" aria-label="Password requirements">
+                {PASSWORD_RULES.map((rule) => {
+                  const passed = rule.test(password);
+                  return (
+                    <li
+                      key={rule.label}
+                      className={cn(
+                        'flex items-center gap-1.5 text-xs transition-colors',
+                        passed ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500',
+                      )}
+                    >
+                      {passed ? (
+                        <svg className="w-3 h-3 shrink-0" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+                          <path d="M6 0a6 6 0 100 12A6 6 0 006 0zm2.78 4.72a.75.75 0 00-1.06-1.06L5.25 6.13 4.28 5.16a.75.75 0 00-1.06 1.06l1.5 1.5a.75.75 0 001.06 0l3-3z"/>
+                        </svg>
+                      ) : (
+                        <svg className="w-3 h-3 shrink-0" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                          <circle cx="6" cy="6" r="5" />
+                        </svg>
+                      )}
+                      {rule.label}
+                    </li>
+                  );
+                })}
+              </ul>
+              <PasswordInput
                 label="Confirm new password"
-                type="password"
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 placeholder="Repeat the new password"
-                error={errors.confirm}
+                error={errors.confirm ?? (confirm.length > 0 && confirm !== password
+                  ? "Passwords don't match yet"
+                  : undefined)}
+                success={confirm.length > 0 && confirm === password ? 'Passwords match' : undefined}
                 autoComplete="new-password"
                 required
               />

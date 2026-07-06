@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter }  from 'next/navigation';
 import { Input }      from '@/components/ui/Input';
+import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Button }     from '@/components/ui/Button';
 import { useToast }   from '@/components/ui/Toast';
 import { authApi }    from '@/lib/api/auth.api';
@@ -128,9 +129,8 @@ export default function LoginPage() {
               autoFocus
               required
             />
-            <Input
+            <PasswordInput
               label="Password"
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Your password"
