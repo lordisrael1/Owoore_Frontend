@@ -138,6 +138,14 @@ export default function LoginPage() {
               autoComplete="current-password"
               required
             />
+            <div className="flex justify-end -mt-1">
+              <Link
+                href={`/forgot-password${email.trim() ? `?email=${encodeURIComponent(email.trim().toLowerCase())}` : ''}`}
+                className="text-xs text-green-700 dark:text-green-400 hover:underline"
+              >
+                Forgot password?
+              </Link>
+            </div>
             <Button type="submit" fullWidth loading={loading} size="lg" className="mt-2">
               Sign in
             </Button>

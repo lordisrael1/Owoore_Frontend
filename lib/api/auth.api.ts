@@ -97,6 +97,23 @@ export const authApi = {
   },
 
   /**
+   * forgotPassword — POST /auth/admin/forgot-password
+   * Emails a 6-digit reset code to an admin/treasurer account.
+   * Backend always returns the same generic message — it never reveals
+   * whether an account exists. Rate limited: 3 per 15 minutes.
+   */
+  forgotPassword: (email: string) =>
+    api.post<{ message: string }>('/auth/admin/forgot-password', { email }, { isPublic: true }),
+
+  /**
+   * resetPassword — POST /auth/admin/reset-password
+   * Verifies the emailed code and sets the new password for every active
+   * admin/treasurer account under that email.
+   */
+  resetPassword: (input: { email: string; code: string; new_password: string }) =>
+    api.post<{ message: string }>('/auth/admin/reset-password', input, { isPublic: true }),
+
+  /**
    * refresh — POST /auth/refresh
    * Re-issues a member access token using the stored refresh token.
    * Sends { token: refreshToken } in the request body — no Authorization header.
