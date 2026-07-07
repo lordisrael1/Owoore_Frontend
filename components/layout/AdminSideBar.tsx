@@ -116,7 +116,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-xs mb-0.5',
+                    'flex items-center gap-2.5 px-3 py-2 rounded-full text-xs mb-0.5',
                     'transition-colors duration-100',
                     active
                       ? 'bg-green-50 dark:bg-green-950/50 text-green-700 dark:text-green-400 font-medium'

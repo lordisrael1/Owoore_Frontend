@@ -84,7 +84,7 @@ export const Select: React.FC<SelectProps> = ({
         onClick={() => setOpen((o) => !o)}
         className={cn(
           'w-full flex items-center justify-between gap-2',
-          'px-3 py-2.5 rounded-lg text-sm text-left',
+          'px-3 py-2.5 rounded-xl text-sm text-left',
           'bg-white dark:bg-gray-900 border',
           'transition-colors duration-150',
           'focus:outline-none focus:ring-2 focus:ring-green-700 focus:ring-offset-0',
@@ -113,7 +113,7 @@ export const Select: React.FC<SelectProps> = ({
       {open && (
         <div
           className={cn(
-            'absolute z-40 w-full mt-1 rounded-lg shadow-lg',
+            'absolute z-40 w-full mt-1.5 rounded-xl shadow-soft-lg dark:shadow-lg',
             'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800',
             'overflow-hidden',
           )}

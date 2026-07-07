@@ -67,7 +67,7 @@ const FeaturedCard: React.FC<FeaturedCardProps> = ({
       className={cn(
         'col-span-2 lg:col-span-2',
         'metric-featured-gradient rounded-2xl p-5 flex flex-col relative overflow-hidden',
-        'shadow-lg shadow-green-900/20',
+        'shadow-lg shadow-green-900/25',
       )}
     >
       {/* Background glow */}
@@ -88,7 +88,7 @@ const FeaturedCard: React.FC<FeaturedCardProps> = ({
       {/* Animated reveal */}
       <p
         className={cn(
-          'text-2xl font-bold text-white tracking-tight transition-all duration-700',
+          'text-3xl font-bold text-white tracking-tight tabular-nums transition-all duration-700',
           animated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3',
         )}
       >

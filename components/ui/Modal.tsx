@@ -64,9 +64,9 @@ export const Modal: React.FC<ModalProps> = ({
       {/* Panel */}
       <div
         className={cn(
-          'relative w-full rounded-xl bg-white dark:bg-gray-900',
+          'relative w-full rounded-2xl bg-white dark:bg-gray-900',
           'border border-gray-100 dark:border-gray-800',
-          'shadow-xl',
+          'shadow-xl animate-scale-in',
           sizeClasses[size],
         )}
       >

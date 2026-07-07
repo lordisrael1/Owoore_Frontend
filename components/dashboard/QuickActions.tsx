@@ -42,8 +42,8 @@ export const QuickActions: React.FC = () => (
             'flex flex-col items-center gap-2 py-4 px-3 rounded-xl text-center',
             'border border-gray-100 dark:border-gray-800',
             'hover:border-gray-200 dark:hover:border-gray-700',
-            'hover:bg-gray-50 dark:hover:bg-gray-800/50',
-            'transition-colors duration-150',
+            'hover:bg-gray-50 dark:hover:bg-gray-800/50 hover:-translate-y-px',
+            'transition-all duration-150',
             a.color,
           )}
         >

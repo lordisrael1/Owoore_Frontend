@@ -45,7 +45,7 @@ export function Table<T>({
                 key={col.key}
                 style={col.width ? { width: col.width } : undefined}
                 className={cn(
-                  'py-2.5 px-3 text-xs font-medium text-gray-500 dark:text-gray-400',
+                  'py-2.5 px-3 text-[10px] font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500',
                   'border-b border-gray-100 dark:border-gray-800',
                   alignClass[col.align ?? 'left'],
                 )}
@@ -128,7 +128,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onChange(Math.max(0, offset - limit))}
           disabled={currentPage === 1}
           className={cn(
-            'px-2.5 py-1.5 text-xs rounded-md border border-gray-200 dark:border-gray-700',
+            'px-3 py-1.5 text-xs rounded-full border border-gray-200 dark:border-gray-700',
             'text-gray-600 dark:text-gray-400',
             'hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed',
           )}
@@ -139,7 +139,7 @@ export const Pagination: React.FC<PaginationProps> = ({
           onClick={() => onChange(offset + limit)}
           disabled={currentPage >= totalPages}
           className={cn(
-            'px-2.5 py-1.5 text-xs rounded-md border border-gray-200 dark:border-gray-700',
+            'px-3 py-1.5 text-xs rounded-full border border-gray-200 dark:border-gray-700',
             'text-gray-600 dark:text-gray-400',
             'hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-40 disabled:cursor-not-allowed',
           )}

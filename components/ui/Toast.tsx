@@ -98,7 +98,7 @@ const ToastItem: React.FC<{ toast: Toast; dismiss: (id: string) => void }> = ({
 }) => (
   <div
     className={cn(
-      'flex items-start gap-3 w-80 rounded-lg',
+      'flex items-start gap-3 w-80 rounded-xl',
       'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800',
       'shadow-lg p-3.5 animate-in slide-in-from-right-4 fade-in duration-300',
       bgStyles[t.type],

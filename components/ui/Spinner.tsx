@@ -58,7 +58,7 @@ export const SkeletonRow: React.FC<{ className?: string }> = ({ className }) => 
 );
 
 export const CardSkeleton: React.FC = () => (
-  <div className="rounded-xl border border-gray-100 dark:border-gray-800 p-5 space-y-3">
+  <div className="rounded-2xl border border-gray-100 dark:border-gray-800 p-5 space-y-3">
     <SkeletonRow className="h-4 w-1/3" />
     <SkeletonRow className="h-7 w-1/2" />
     <SkeletonRow className="h-3 w-1/4" />

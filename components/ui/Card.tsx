@@ -24,9 +24,9 @@ export const Card: React.FC<CardProps> = ({
     <div
       onClick={onClick}
       className={cn(
-        'bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800',
+        'bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-soft',
         paddings[padding],
-        hover && 'cursor-pointer transition-shadow duration-150 hover:shadow-sm',
+        hover && 'cursor-pointer transition-all duration-150 hover:shadow-soft-lg hover:-translate-y-px',
         onClick && 'cursor-pointer',
         className,
       )}
@@ -117,11 +117,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   className,
 }) => (
   <Card className={cn('min-w-0', className)}>
-    <div className={cn('w-8 h-8 rounded-lg flex items-center justify-center mb-3', iconBg[color])}>
+    <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center mb-3', iconBg[color])}>
       {icon}
     </div>
-    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</p>
-    <p className="text-xl font-medium text-gray-900 dark:text-gray-100 tracking-tight">{value}</p>
+    <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+    <p className="text-2xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight tabular-nums">{value}</p>
     {delta && (
       <p className={cn('text-xs flex items-center gap-0.5 mt-1', deltaColor[deltaDir])}>
         <DeltaArrow dir={deltaDir} />

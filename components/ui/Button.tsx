@@ -17,10 +17,10 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
 
 const variants: Record<ButtonVariant, string> = {
   primary: [
-    'bg-green-700 text-white border-transparent',
+    'bg-green-700 text-white border-transparent shadow-sm shadow-green-900/20',
     'hover:bg-green-800 active:bg-green-900',
     'focus-visible:ring-2 focus-visible:ring-green-700 focus-visible:ring-offset-2',
-    'disabled:bg-green-300 disabled:cursor-not-allowed',
+    'disabled:bg-green-300 disabled:cursor-not-allowed disabled:shadow-none',
   ].join(' '),
   ghost: [
     'bg-transparent text-gray-700 dark:text-gray-300 border-transparent',
@@ -47,10 +47,10 @@ const variants: Record<ButtonVariant, string> = {
 };
 
 const sizes: Record<ButtonSize, string> = {
-  xs: 'px-2.5 py-1.5 text-xs gap-1.5 rounded-md',
-  sm: 'px-3 py-2 text-xs gap-1.5 rounded-md',
-  md: 'px-4 py-2.5 text-sm gap-2 rounded-lg',
-  lg: 'px-5 py-3 text-sm gap-2 rounded-lg',
+  xs: 'px-3 py-1.5 text-xs gap-1.5 rounded-full',
+  sm: 'px-3.5 py-2 text-xs gap-1.5 rounded-full',
+  md: 'px-5 py-2.5 text-sm gap-2 rounded-full',
+  lg: 'px-6 py-3 text-sm gap-2 rounded-full',
 };
 
 const Spinner: React.FC<{ size: ButtonSize }> = ({ size }) => {
@@ -96,6 +96,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           // Base
           'inline-flex items-center justify-center font-medium',
           'border transition-all duration-150 select-none',
+          'active:scale-[0.98]',
           'focus:outline-none focus-visible:outline-none',
           // Variant + size
           variants[variant],

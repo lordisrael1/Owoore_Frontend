@@ -61,7 +61,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             className={cn(
               // Base
-              'w-full rounded-lg border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100',
+              'w-full rounded-xl border bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100',
               'text-sm placeholder:text-gray-400 dark:placeholder:text-gray-600',
               'transition-colors duration-150',
               // Focus
