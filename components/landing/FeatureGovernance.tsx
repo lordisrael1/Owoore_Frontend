@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { TiltCard } from './TiltCard';
 
 const signatories = [
   { name: 'Pastor Emmanuel', role: 'Senior Pastor',  status: 'APPROVED' as const, delay: 0 },
@@ -43,14 +44,12 @@ export const FeatureGovernance: React.FC = () => {
 
   return (
     <section className="border-t border-gray-100 dark:border-gray-800 py-20 sm:py-28" id="for-churches">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8">
+      <div className="max-w-5xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
           {/* Left: approval card */}
-          <div
-            ref={leftRef}
-            className="reveal-left bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-xl shadow-black/5 order-2 lg:order-1"
-          >
+          <div ref={leftRef} className="reveal-left order-2 lg:order-1">
+          <TiltCard className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-xl shadow-black/5">
             {/* Header */}
             <div className="flex items-center justify-between mb-1">
               <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Payout approval</p>
@@ -122,6 +121,7 @@ export const FeatureGovernance: React.FC = () => {
                 Decline
               </button>
             </div>
+          </TiltCard>
           </div>
 
           {/* Right: copy */}

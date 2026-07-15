@@ -52,16 +52,16 @@ export const HowItWorks: React.FC = () => {
 
   return (
     <section id="how" className="border-t border-gray-100 dark:border-gray-800 py-20 sm:py-28" ref={containerRef as React.Ref<HTMLDivElement>}>
-      <div className="max-w-6xl mx-auto px-5 sm:px-8">
+      <div className="max-w-5xl mx-auto px-5 sm:px-8">
 
-        {/* Section header */}
-        <div className="reveal mb-14 max-w-xl">
+        {/* Section header — centered */}
+        <div className="reveal mb-14 max-w-xl mx-auto text-center">
           <p className="text-xs font-semibold uppercase tracking-widest text-green-700 dark:text-green-400 mb-3">
             How it works
           </p>
           <h2 className="text-3xl sm:text-4xl font-semibold tracking-tight text-gray-900 dark:text-gray-100 mb-4 leading-tight">
             From join link to{' '}
-            <span className="text-green-700 dark:text-green-400">reconciled ledger</span>
+            <span className="text-gradient-green">reconciled ledger</span>
           </h2>
           <p className="text-base text-gray-500 dark:text-gray-400 leading-relaxed">
             Three steps. Works from any Nigerian bank. No app download. No manual matching.
@@ -81,7 +81,7 @@ export const HowItWorks: React.FC = () => {
             return (
               <div
                 key={step.num}
-                className={`reveal stagger-${i + 1} group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-lg hover:shadow-black/5 transition-all duration-300`}
+                className={`reveal stagger-${i + 1} group relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6 hover:border-green-200 dark:hover:border-green-800/60 hover:shadow-xl hover:shadow-green-900/8 transition-all duration-300`}
               >
                 {/* Step badge */}
                 <div className="flex items-center gap-3 mb-5">

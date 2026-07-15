@@ -6,6 +6,7 @@ import { HowItWorks }              from '@/components/landing/HowItWorks';
 import { FeatureReconciliation }   from '@/components/landing/FeatureReconciliation';
 import { FeatureGovernance }       from '@/components/landing/FeatureGovernance';
 import { FeatureMember }           from '@/components/landing/FeatureMember';
+import { FAQ }                     from '@/components/landing/FAQ';
 import { CTA }                     from '@/components/landing/CTA';
 
 /**
@@ -54,6 +55,9 @@ export default function LandingPage() {
 
         {/* Feature: member portal + NUBAN reveal */}
         <FeatureMember />
+
+        {/* FAQ accordion */}
+        <FAQ />
 
         {/* Email capture + register CTA */}
         <CTA />

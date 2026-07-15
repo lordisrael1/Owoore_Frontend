@@ -2,7 +2,8 @@
 import * as React from 'react';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import { Badge } from '@/components/ui/Badge';
-import { useScrollReveal, useStaggerReveal } from '@/hooks/useScrollReveal';
+import { useScrollReveal } from '@/hooks/useScrollReveal';
+import { TiltCard } from './TiltCard';
 
 const funds = [
   { name: 'Tithe',               pct: 84,  amt: '₦4.2M',  color: 'green'  as const },
@@ -30,7 +31,7 @@ export const FeatureReconciliation: React.FC = () => {
 
   return (
     <section className="border-t border-gray-100 dark:border-gray-800 py-20 sm:py-28" id="product">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8">
+      <div className="max-w-5xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
           {/* Left: copy */}
@@ -57,10 +58,8 @@ export const FeatureReconciliation: React.FC = () => {
           </div>
 
           {/* Right: live fund panel */}
-          <div
-            ref={rightRef}
-            className="reveal-right bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-xl shadow-black/5"
-          >
+          <div ref={rightRef} className="reveal-right">
+          <TiltCard className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-xl shadow-black/5">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">July 2026 — fund collection</p>
@@ -97,6 +96,7 @@ export const FeatureReconciliation: React.FC = () => {
                 View all →
               </button>
             </div>
+          </TiltCard>
           </div>
 
         </div>

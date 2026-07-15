@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useScrollReveal } from '@/hooks/useScrollReveal';
 import { cn } from '@/lib/cn';
+import { TiltCard } from './TiltCard';
 
 const checks = [
   'Email OTP — no password to forget',
@@ -93,7 +94,7 @@ export const FeatureMember: React.FC = () => {
 
   return (
     <section className="border-t border-gray-100 dark:border-gray-800 py-20 sm:py-28">
-      <div className="max-w-6xl mx-auto px-5 sm:px-8">
+      <div className="max-w-5xl mx-auto px-5 sm:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
           {/* Left: copy */}
@@ -121,10 +122,8 @@ export const FeatureMember: React.FC = () => {
           </div>
 
           {/* Right: browser mock */}
-          <div
-            ref={rightRef}
-            className="reveal-right bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xl shadow-black/5"
-          >
+          <div ref={rightRef} className="reveal-right">
+          <TiltCard className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl overflow-hidden shadow-xl shadow-black/5">
             {/* Browser chrome */}
             <div className="flex items-center gap-2 px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
               <span className="w-2.5 h-2.5 rounded-full bg-red-400" aria-hidden="true"/>
@@ -179,6 +178,7 @@ export const FeatureMember: React.FC = () => {
               {/* Account reveal */}
               <AccountReveal />
             </div>
+          </TiltCard>
           </div>
 
         </div>

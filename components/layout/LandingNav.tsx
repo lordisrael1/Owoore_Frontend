@@ -20,6 +20,7 @@ const navLinks = [
   { href: '#product',      label: 'Product' },
   { href: '#how',          label: 'How it works' },
   { href: '#for-churches', label: 'For churches' },
+  { href: '#faq',          label: 'FAQ' },
 ];
 
 export const LandingNav: React.FC = () => {
@@ -35,7 +36,7 @@ export const LandingNav: React.FC = () => {
 
   // Highlight active nav section via IntersectionObserver
   React.useEffect(() => {
-    const ids = ['product', 'how', 'for-churches'];
+    const ids = ['product', 'how', 'for-churches', 'faq'];
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
@@ -81,7 +82,10 @@ export const LandingNav: React.FC = () => {
           {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-0.5 animate-fade-down delay-100" aria-label="Main navigation">
             {navLinks.map((link) => (
-              <Link
+              // Plain <a> — same-page anchors must not go through the Next
+              // router, or the client-side transition re-renders the page and
+              // resets the scroll-reveal state (sections stay invisible).
+              <a
                 key={link.href}
                 href={link.href}
                 className={cn(
@@ -95,7 +99,7 @@ export const LandingNav: React.FC = () => {
                 {activeSection === link.href && (
                   <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-green-600" />
                 )}
-              </Link>
+              </a>
             ))}
           </nav>
 
@@ -137,7 +141,7 @@ export const LandingNav: React.FC = () => {
           >
             <div className="flex flex-col gap-0.5 mb-4">
               {navLinks.map((link) => (
-                <Link
+                <a
                   key={link.href}
                   href={link.href}
                   onClick={() => setMobileOpen(false)}
@@ -149,7 +153,7 @@ export const LandingNav: React.FC = () => {
                   )}
                 >
                   {link.label}
-                </Link>
+                </a>
               ))}
             </div>
             <div className="flex flex-col gap-2 pt-3 border-t border-gray-100 dark:border-gray-800">

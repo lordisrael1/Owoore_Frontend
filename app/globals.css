@@ -20,6 +20,13 @@
   }
 }
 
+html {
+  scroll-padding-top: 4.5rem; /* keep anchor targets clear of the sticky nav */
+}
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
@@ -298,4 +305,232 @@ body {
   white-space: nowrap;
   border-right: 2px solid currentColor;
   animation: typewriter 1.2s steps(10) both, blink-caret 0.75s step-end 4;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   Landing v2 — 3D / motion system
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Word-by-word headline rise ────────────────────────────────────────────── */
+
+@keyframes word-rise {
+  from { opacity: 0; transform: translateY(110%) rotate(4deg); }
+  to   { opacity: 1; transform: translateY(0)    rotate(0deg); }
+}
+
+.word-mask { display: inline-block; overflow: hidden; vertical-align: bottom; padding-bottom: 0.08em; margin-bottom: -0.08em; }
+.word-rise {
+  display: inline-block;
+  animation: word-rise 0.7s cubic-bezier(.16,1,.3,1) both;
+}
+
+/* ── Gradient ink for accent words ─────────────────────────────────────────── */
+
+.text-gradient-green {
+  background: linear-gradient(100deg, #15803d 10%, #059669 45%, #16a34a 70%, #15803d 90%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: shimmer 4s linear infinite;
+}
+
+/* ── Aurora / conic glow behind hero ───────────────────────────────────────── */
+
+@keyframes aurora-spin {
+  from { transform: translate(-50%, -50%) rotate(0deg)   scale(1); }
+  50%  { transform: translate(-50%, -50%) rotate(180deg) scale(1.15); }
+  to   { transform: translate(-50%, -50%) rotate(360deg) scale(1); }
+}
+
+.hero-aurora {
+  position: absolute;
+  top: 32%; left: 50%;
+  width: 1100px; height: 1100px;
+  transform: translate(-50%, -50%);
+  background: conic-gradient(
+    from 90deg,
+    rgba(22, 163, 74, 0.10),
+    rgba(16, 185, 129, 0.05),
+    rgba(20, 184, 166, 0.09),
+    rgba(22, 163, 74, 0.04),
+    rgba(22, 163, 74, 0.10)
+  );
+  border-radius: 50%;
+  filter: blur(90px);
+  animation: aurora-spin 24s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── 3D perspective grid floor (three.js-style scene floor) ────────────────── */
+
+@keyframes grid-pan {
+  from { background-position: 0 0; }
+  to   { background-position: 0 48px; }
+}
+
+.hero-floor {
+  position: absolute;
+  left: -25%; right: -25%; bottom: -8%;
+  height: 46%;
+  background-image:
+    linear-gradient(rgba(22,163,74,0.14) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(22,163,74,0.14) 1px, transparent 1px);
+  background-size: 48px 48px;
+  transform: perspective(600px) rotateX(62deg);
+  transform-origin: top center;
+  animation: grid-pan 2.6s linear infinite;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 35%, transparent 95%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 35%, transparent 95%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .hero-floor {
+  background-image:
+    linear-gradient(rgba(74,222,128,0.10) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(74,222,128,0.10) 1px, transparent 1px);
+}
+
+/* ── 3D tilt cards ─────────────────────────────────────────────────────────── */
+
+.perspective-1200 { perspective: 1200px; }
+.preserve-3d      { transform-style: preserve-3d; }
+
+.tilt-card {
+  transition: transform 0.18s ease-out, box-shadow 0.3s ease;
+  will-change: transform;
+}
+.tilt-glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    600px circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(255, 255, 255, 0.35),
+    transparent 45%
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: 20;
+}
+.dark .tilt-glare {
+  background: radial-gradient(
+    600px circle at var(--glare-x, 50%) var(--glare-y, 50%),
+    rgba(74, 222, 128, 0.10),
+    transparent 45%
+  );
+}
+.tilt-card:hover .tilt-glare { opacity: 1; }
+
+/* ── Floating 3D chips around hero card ────────────────────────────────────── */
+
+@keyframes float-3d-a {
+  0%, 100% { transform: translate3d(0, 0, 0)      rotate(-2deg); }
+  50%      { transform: translate3d(6px, -14px, 0) rotate(2deg);  }
+}
+@keyframes float-3d-b {
+  0%, 100% { transform: translate3d(0, 0, 0)       rotate(2deg);  }
+  50%      { transform: translate3d(-8px, -10px, 0) rotate(-2deg); }
+}
+@keyframes float-3d-c {
+  0%, 100% { transform: translate3d(0, 0, 0)      rotate(-1deg); }
+  50%      { transform: translate3d(4px, -18px, 0) rotate(3deg);  }
+}
+.animate-float-3d-a { animation: float-3d-a 5s   ease-in-out infinite; }
+.animate-float-3d-b { animation: float-3d-b 6.5s ease-in-out infinite; }
+.animate-float-3d-c { animation: float-3d-c 5.8s ease-in-out infinite; }
+
+/* ── Infinite bank marquee ─────────────────────────────────────────────────── */
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 12%, black 88%, transparent);
+  overflow: hidden;
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+.marquee-mask:hover .marquee-track { animation-play-state: paused; }
+
+/* ── Button shine sweep ────────────────────────────────────────────────────── */
+
+@keyframes shine-sweep {
+  from { transform: translateX(-150%) skewX(-20deg); }
+  to   { transform: translateX(350%)  skewX(-20deg); }
+}
+
+.btn-shine { position: relative; overflow: hidden; }
+.btn-shine::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  transform: translateX(-150%) skewX(-20deg);
+  pointer-events: none;
+}
+.btn-shine:hover::after {
+  animation: shine-sweep 0.8s ease;
+}
+
+/* ── FAQ accordion (grid-rows height animation) ────────────────────────────── */
+
+.faq-answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.4s cubic-bezier(.16,1,.3,1);
+}
+.faq-answer[data-open="true"] { grid-template-rows: 1fr; }
+.faq-answer > div { overflow: hidden; }
+
+.faq-icon { transition: transform 0.35s cubic-bezier(.16,1,.3,1); }
+.faq-item[data-open="true"] .faq-icon { transform: rotate(45deg); }
+
+/* ── Scroll progress bar ───────────────────────────────────────────────────── */
+
+.scroll-progress {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #15803d, #10b981);
+  transform-origin: left;
+  z-index: 60;
+  pointer-events: none;
+}
+
+/* ── Orbiting glow ring (section accents) ──────────────────────────────────── */
+
+@keyframes ring-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(1); }
+  50%      { opacity: 0.7;  transform: scale(1.06); }
+}
+.animate-ring-pulse { animation: ring-pulse 4s ease-in-out infinite; }
+
+/* ── Reduced motion: kill the theatrics ────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-aurora,
+  .hero-floor,
+  .marquee-track,
+  .word-rise,
+  .animate-float-3d-a,
+  .animate-float-3d-b,
+  .animate-float-3d-c,
+  .text-gradient-green,
+  .animate-ring-pulse {
+    animation: none !important;
+  }
+  .word-rise { opacity: 1; transform: none; }
+  .tilt-card { transition: none; }
 }
