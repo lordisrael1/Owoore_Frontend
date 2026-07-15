@@ -22,9 +22,12 @@ export default function MemberDetailPage() {
   const year    = new Date().getFullYear();
   const { statement, isLoading } = useMemberStatement(id as string, year);
 
-  const handleDownload = () => {
-    const url = membersApi.downloadStatementUrl(id as string, year);
-    window.open(url, '_blank');
+  const handleDownload = async () => {
+    try {
+      await membersApi.downloadStatement(id as string, year);
+    } catch {
+      // statement download failed — the API error is already logged
+    }
   };
 
   if (isLoading) return <PageLoader message="Loading member statement…" />;

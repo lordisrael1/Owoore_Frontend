@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { BankLookupStep } from './BankLookupStep';
 import { useToast } from '@/components/ui/Toast';
 import { payoutsApi } from '@/lib/api/payouts.api';
+import { revalidatePayoutData } from '@/hooks/usePayouts';
 import { formatNaira } from '@/lib/format';
 import { inputValueToKobo, koboToInputValue, fromKobo } from '@/lib/kobo';
 import type { BankLookupResult, BankOption, PayoutFundBalance } from '@/lib/api/payouts.api';
@@ -90,6 +91,9 @@ export const InitiatePayoutForm: React.FC<InitiatePayoutFormProps> = ({
         purpose:        purpose.trim(),
       });
       success('Payout initiated', 'Approval emails have been sent to your signatories.');
+      // Refresh balances/badges NOW — the soft-lock just changed what's
+      // available, and waiting for the 30s poll leaves other tabs stale
+      void revalidatePayoutData();
       onSuccess(result.payoutRequestId);
     } catch (err: any) {
       setSubmitError(err?.message ?? 'Something went wrong while initiating the payout.');

@@ -82,6 +82,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       children,
       disabled,
       as: Tag = 'button',
+      // Native <button> defaults to type="submit" — inside a form, a ghost
+      // "Cancel" or icon button would silently submit it. Opt IN to submit.
+      type = 'button',
       ...props
     },
     ref,
@@ -91,7 +94,9 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         ref={ref}
+        type={type}
         disabled={isDisabled}
+        aria-busy={loading || undefined}
         className={cn(
           // Base
           'inline-flex items-center justify-center font-medium',

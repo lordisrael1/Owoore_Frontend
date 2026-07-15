@@ -1,5 +1,6 @@
 'use client';
 import React, { useEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import { useRequireAdmin } from '@/hooks/useAuth';
 import { AdminSidebar }    from '@/components/layout/AdminSideBar';
 import { AdminTopbar }     from '@/components/layout/AdminTopBar';
@@ -32,6 +33,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const org                        = useOrgStore();
   const { activePeriod, setActivePeriod, sidebarOpen, closeSidebar } = useUiStore();
   const { pendingCount }           = usePayouts();
+  const pathname                   = usePathname();
+
+  // The off-canvas sidebar must not stay open after a nav link is tapped
+  useEffect(() => { closeSidebar(); }, [pathname, closeSidebar]);
 
   useEffect(() => {
     if (org.orgId && !org.slug) {

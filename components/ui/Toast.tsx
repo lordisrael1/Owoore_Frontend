@@ -42,8 +42,9 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const toast = React.useCallback((t: Omit<Toast, 'id'>) => {
     const id = Math.random().toString(36).slice(2);
     setToasts((prev) => [...prev.slice(-4), { ...t, id }]); // max 5 toasts
-    setTimeout(() => dismiss(id), 4500);
-  }, [dismiss]);
+    // Dismissal timing lives in ToastItem — it pauses on hover/focus and
+    // gives errors longer than a flat 4.5s (WCAG 2.2.1 Timing Adjustable).
+  }, []);
 
   const success = React.useCallback((title: string, message?: string) =>
     toast({ type: 'success', title, message }), [toast]);
@@ -92,18 +93,66 @@ const bgStyles: Record<ToastType, string> = {
   warning: 'border-l-4 border-l-amber-500',
 };
 
+// Errors carry actionable detail (e.g. why a payout was rejected) — give
+// readers meaningfully longer than the happy-path confirmations.
+const DURATIONS: Record<ToastType, number> = {
+  success: 4_500,
+  info:    4_500,
+  warning: 7_000,
+  error:   10_000,
+};
+
 const ToastItem: React.FC<{ toast: Toast; dismiss: (id: string) => void }> = ({
   toast: t,
   dismiss,
-}) => (
+}) => {
+  // Pausable countdown: hovering or focusing the toast (mouse readers,
+  // keyboard users reaching the dismiss button) stops the clock; leaving
+  // resumes with whatever time was left.
+  const remaining = React.useRef(DURATIONS[t.type]);
+  const startedAt = React.useRef(0);
+  const timer     = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clear = React.useCallback(() => {
+    if (timer.current) {
+      clearTimeout(timer.current);
+      timer.current = null;
+    }
+  }, []);
+
+  const resume = React.useCallback(() => {
+    clear();
+    startedAt.current = Date.now();
+    timer.current = setTimeout(() => dismiss(t.id), remaining.current);
+  }, [clear, dismiss, t.id]);
+
+  const pause = React.useCallback(() => {
+    if (!timer.current) return;
+    remaining.current = Math.max(0, remaining.current - (Date.now() - startedAt.current));
+    clear();
+  }, [clear]);
+
+  React.useEffect(() => {
+    resume();
+    return clear;
+  }, [resume, clear]);
+
+  return (
   <div
+    onMouseEnter={pause}
+    onMouseLeave={resume}
+    onFocus={pause}
+    onBlur={resume}
     className={cn(
       'flex items-start gap-3 w-80 rounded-xl',
       'bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800',
       'shadow-lg p-3.5 animate-in slide-in-from-right-4 fade-in duration-300',
       bgStyles[t.type],
     )}
-    role="alert"
+    // Only errors/warnings interrupt the screen reader; success/info wait
+    // their turn (role="status" = polite). role="alert" on everything made
+    // routine confirmations barge in over whatever the user was reading.
+    role={t.type === 'error' || t.type === 'warning' ? 'alert' : 'status'}
   >
     <div className="shrink-0 mt-0.5">{icons[t.type]}</div>
     <div className="flex-1 min-w-0">
@@ -122,7 +171,8 @@ const ToastItem: React.FC<{ toast: Toast; dismiss: (id: string) => void }> = ({
       </svg>
     </button>
   </div>
-);
+  );
+};
 
 const ToastStack: React.FC<{ toasts: Toast[]; dismiss: (id: string) => void }> = ({
   toasts,

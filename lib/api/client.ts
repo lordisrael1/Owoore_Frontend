@@ -212,6 +212,39 @@ export async function apiRequest<T = unknown>(
   return json.data as T;
 }
 
+// ── Authenticated file download ───────────────────────────────────────────────
+
+/**
+ * downloadFile — fetches a file with the Authorization HEADER and saves it
+ * via a Blob object-URL.
+ *
+ * Never build download links with the JWT in the query string: the token
+ * lands in server logs, browser history, and Referer headers — replayable
+ * by anyone who can read them until it expires. window.open() can't set
+ * headers, so we fetch → Blob → synthetic <a download> instead.
+ */
+export async function downloadFile(path: string, filename: string): Promise<void> {
+  const token = getToken('admin');
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  });
+
+  if (!res.ok) {
+    throw new ApiError(`Download failed (${res.status})`, 'DOWNLOAD_ERROR', res.status);
+  }
+
+  const blob = await res.blob();
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
 // ── Convenience wrappers ──────────────────────────────────────────────────────
 
 export const api = {

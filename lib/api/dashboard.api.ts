@@ -71,6 +71,31 @@ export interface PayoutHistoryItem {
   amount_display: string;
 }
 
+export interface LedgerTransaction {
+  id:             string;
+  source:         'MEMBER' | 'ANONYMOUS';
+  member_id:      string | null;
+  member_name:    string | null;   // null on anonymous rows — by design
+  member_code:    string | null;
+  fund_type_id:   string;
+  fund_name:      string;
+  amount_kobo:    number;
+  payment_status: string;          // EXACT | UNDERPAYMENT | OVERPAYMENT
+  variance_kobo:  number;
+  sender_bank:    string | null;
+  narration:      string | null;
+  period_month:   string;
+  created_at:     string;
+  amount_display: string;
+}
+
+export interface LedgerResponse {
+  total:        number;
+  limit:        number;
+  offset:       number;
+  transactions: LedgerTransaction[];
+}
+
 export interface ActivityFeedItem {
   id:     string;
   type:   'payment' | 'payout' | 'member' | 'campaign' | 'system';
@@ -120,6 +145,29 @@ export const dashboardApi = {
       `/dashboard/payout-history?limit=${limit}`,
       { tokenType: 'admin' },
     ),
+
+  /**
+   * transactions — GET /dashboard/transactions
+   * Org-wide giving ledger: member payments + anonymous inflows, newest
+   * first, paginated. Anonymous rows never carry sender identity.
+   */
+  transactions: (opts: {
+    fundTypeId?: string;
+    period?:     string;
+    limit?:      number;
+    offset?:     number;
+  } = {}) => {
+    const params = new URLSearchParams();
+    if (opts.fundTypeId) params.set('fund_type_id', opts.fundTypeId);
+    if (opts.period)     params.set('period',       opts.period);
+    if (opts.limit)      params.set('limit',        String(opts.limit));
+    if (opts.offset)     params.set('offset',       String(opts.offset));
+    const qs = params.toString();
+    return api.get<LedgerResponse>(
+      `/dashboard/transactions${qs ? `?${qs}` : ''}`,
+      { tokenType: 'admin' },
+    );
+  },
 
   /**
    * activity — GET /dashboard/activity

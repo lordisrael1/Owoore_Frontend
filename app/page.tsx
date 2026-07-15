@@ -37,7 +37,9 @@ export default function LandingPage() {
     <>
       <LandingNav />
 
-      <main id="main-content">
+      {/* overflow-x-clip: reveal-left/right sections sit ±28px off-axis until
+          scrolled into view — without the clip they widen the page on mobile */}
+      <main id="main-content" className="overflow-x-clip">
         {/* Hero — animated receipt card + stats */}
         <Hero />
 

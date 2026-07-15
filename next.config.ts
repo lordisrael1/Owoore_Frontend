@@ -3,6 +3,21 @@ import type { NextConfig } from "next";
 const isDev = process.env.NODE_ENV === 'development';
 
 /**
+ * Where /api/v1/* is proxied (server-side rewrite — the browser only ever
+ * talks to this app's own origin).
+ *
+ *   npm run dev            → http://localhost:4000   (local backend)
+ *   Vercel/Render build    → https://owoore.onrender.com
+ *   BACKEND_URL env var    → overrides both (e.g. a staging backend)
+ *
+ * BACKEND_URL is read at build/boot on the server, so it needs no
+ * NEXT_PUBLIC_ prefix and never reaches the client bundle.
+ */
+const BACKEND_URL =
+  process.env.BACKEND_URL ??
+  (isDev ? 'http://localhost:4000' : 'https://owoore.onrender.com');
+
+/**
  * Content-Security-Policy — blocks injected scripts even if XSS slips through.
  *
  * Notes on each directive:
@@ -21,7 +36,9 @@ const csp = [
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ''}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
-  "connect-src 'self' https://owoore.onrender.com",
+  // 'self' covers the normal same-origin /api/v1 path; the extra hosts allow
+  // the direct-URL workflow (NEXT_PUBLIC_API_URL pointed straight at a backend)
+  `connect-src 'self' https://owoore.onrender.com${isDev ? ' http://localhost:4000 ws://localhost:*' : ''}`,
   "font-src 'self' data:",
   "worker-src 'self'",
   "object-src 'none'",
@@ -51,7 +68,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/api/v1/:path*',
-        destination: 'https://owoore.onrender.com/api/v1/:path*',
+        destination: `${BACKEND_URL}/api/v1/:path*`,
       },
     ];
   },

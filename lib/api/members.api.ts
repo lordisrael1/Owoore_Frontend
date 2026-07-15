@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, downloadFile } from './client';
 
 export interface MemberProfile {
   id:         string;
@@ -153,12 +153,12 @@ export const membersApi = {
     api.get<MemberStatementResponse>(`/members/${id}/statement${year ? `?year=${year}` : ''}`, { tokenType: 'admin' }),
 
   /**
-   * downloadStatement — same endpoint with ?format=csv
-   * Returns a URL that triggers a CSV download when opened.
+   * downloadStatement — same endpoint with ?format=csv, fetched with the
+   * Authorization header and saved via Blob. (The old URL-based version
+   * carried no credential at all, so the download always 401'd.)
    */
-  downloadStatementUrl: (id: string, year?: number): string => {
-    const base = process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com/api/v1';
-    const yr   = year ? `&year=${year}` : '';
-    return `${base}/members/${id}/statement?format=csv${yr}`;
+  downloadStatement: async (id: string, year?: number): Promise<void> => {
+    const yr = year ? `&year=${year}` : '';
+    await downloadFile(`/members/${id}/statement?format=csv${yr}`, `member-statement-${id}.csv`);
   },
 };

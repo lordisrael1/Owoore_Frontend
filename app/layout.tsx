@@ -90,8 +90,11 @@ export default function RootLayout({ children }: RootLayoutProps) {
       suppressHydrationWarning // prevents mismatch from dark-mode class
     >
       <head>
-        {/* Preconnect to backend for faster API calls */}
-        <link rel="preconnect" href={process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com'} />
+        {/* Preconnect only when the API lives on another origin — the normal
+            same-origin /api/v1 rewrite needs no early connection */}
+        {process.env.NEXT_PUBLIC_API_URL?.startsWith('http') && (
+          <link rel="preconnect" href={new URL(process.env.NEXT_PUBLIC_API_URL).origin} />
+        )}
         {/* DNS prefetch for Nomba API */}
         <link rel="dns-prefetch" href="https://api.nomba.com" />
       </head>

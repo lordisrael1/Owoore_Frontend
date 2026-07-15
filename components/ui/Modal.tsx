@@ -21,6 +21,10 @@ const sizeClasses = {
   lg: 'max-w-lg',
 };
 
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), ' +
+  'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export const Modal: React.FC<ModalProps> = ({
   open,
   onClose,
@@ -31,17 +35,61 @@ export const Modal: React.FC<ModalProps> = ({
   footer,
   persistent = false,
 }) => {
-  // Trap focus and handle Escape key
+  // useId, not a hardcoded id — two mounted modals must not produce
+  // duplicate aria-labelledby targets
+  const titleId    = React.useId();
+  const subtitleId = React.useId();
+  const panelRef   = React.useRef<HTMLDivElement>(null);
+
+  // Real focus management: move focus IN on open, trap Tab inside the
+  // panel, restore focus to the opener on close. Without this, keyboard
+  // and screen-reader users can Tab into (and act on) the obscured page
+  // behind every confirm/destructive dialog.
   React.useEffect(() => {
     if (!open) return;
+
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+
+    const focusables = (): HTMLElement[] =>
+      panel ? Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)) : [];
+
+    // Move focus into the dialog (first focusable, else the panel itself)
+    (focusables()[0] ?? panel)?.focus();
+
     const handleKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !persistent) onClose();
+      if (e.key === 'Escape' && !persistent) {
+        onClose();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+
+      const els = focusables();
+      if (els.length === 0) {
+        e.preventDefault();
+        return;
+      }
+      const first  = els[0];
+      const last   = els[els.length - 1];
+      const active = document.activeElement;
+
+      if (e.shiftKey) {
+        if (active === first || !panel?.contains(active)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (active === last || !panel?.contains(active)) {
+        e.preventDefault();
+        first.focus();
+      }
     };
+
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
     return () => {
       document.removeEventListener('keydown', handleKey);
       document.body.style.overflow = '';
+      previouslyFocused?.focus?.();
     };
   }, [open, onClose, persistent]);
 
@@ -52,7 +100,8 @@ export const Modal: React.FC<ModalProps> = ({
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="modal-title"
+      aria-labelledby={titleId}
+      aria-describedby={subtitle ? subtitleId : undefined}
     >
       {/* Backdrop */}
       <div
@@ -63,24 +112,29 @@ export const Modal: React.FC<ModalProps> = ({
 
       {/* Panel */}
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className={cn(
           'relative w-full rounded-2xl bg-white dark:bg-gray-900',
           'border border-gray-100 dark:border-gray-800',
-          'shadow-xl animate-scale-in',
+          'shadow-xl animate-scale-in focus:outline-none',
+          // Body scroll is locked while open, so the panel itself must never
+          // exceed the viewport — long content scrolls inside the body region
+          'flex flex-col max-h-[calc(100dvh-2rem)]',
           sizeClasses[size],
         )}
       >
         {/* Header */}
-        <div className="flex items-start justify-between p-5 border-b border-gray-100 dark:border-gray-800">
+        <div className="flex items-start justify-between p-5 border-b border-gray-100 dark:border-gray-800 shrink-0">
           <div>
             <h2
-              id="modal-title"
+              id={titleId}
               className="text-sm font-medium text-gray-900 dark:text-gray-100"
             >
               {title}
             </h2>
             {subtitle && (
-              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>
+              <p id={subtitleId} className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{subtitle}</p>
             )}
           </div>
           {!persistent && (
@@ -102,11 +156,11 @@ export const Modal: React.FC<ModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-5">{children}</div>
+        <div className="p-5 overflow-y-auto min-h-0 flex-1">{children}</div>
 
         {/* Footer */}
         {footer && (
-          <div className="flex items-center justify-end gap-2.5 px-5 pb-5">
+          <div className="flex items-center justify-end gap-2.5 px-5 pb-5 pt-1 shrink-0">
             {footer}
           </div>
         )}

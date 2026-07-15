@@ -42,10 +42,11 @@ interface FeaturedCardProps {
   collected:    number;
   availDisplay?: string;
   collDisplay?:  string;
+  momDelta?:     number | null; // % change in collections vs last month
 }
 
 const FeaturedCard: React.FC<FeaturedCardProps> = ({
-  available, collected, availDisplay, collDisplay,
+  available, collected, availDisplay, collDisplay, momDelta,
 }) => {
   const ref = React.useRef<HTMLDivElement>(null);
   const [animated, setAnimated] = React.useState(false);
@@ -85,15 +86,31 @@ const FeaturedCard: React.FC<FeaturedCardProps> = ({
       {/* Label */}
       <p className="text-xs text-white/70 font-medium mb-1">Available to disburse</p>
 
-      {/* Animated reveal */}
+      {/* Animated reveal — very large balances fall back to the compact
+          format (₦1.23bn) so the headline never clips at mobile widths */}
       <p
         className={cn(
           'text-3xl font-bold text-white tracking-tight tabular-nums transition-all duration-700',
           animated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-3',
         )}
       >
-        {availDisplay ?? formatNairaCompact(available)}
+        {availDisplay && availDisplay.length <= 14 ? availDisplay : formatNairaCompact(available)}
       </p>
+
+      {/* Month-over-month trend — mirrors the reference "% in last 30 days" chip */}
+      {momDelta != null && (
+        <p className={cn(
+          'text-xs mt-1.5 flex items-center gap-1 font-medium',
+          momDelta >= 0 ? 'text-green-200' : 'text-red-200',
+        )}>
+          <svg className="w-3 h-3" fill="none" viewBox="0 0 12 12" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+            {momDelta >= 0
+              ? <path d="M2 8l3-3 2 2 3-4M10 3v3h-3" strokeLinecap="round" strokeLinejoin="round"/>
+              : <path d="M2 4l3 3 2-2 3 4M10 9V6h-3" strokeLinecap="round" strokeLinejoin="round"/>}
+          </svg>
+          {momDelta >= 0 ? '+' : ''}{momDelta.toFixed(1)}% collections vs last month
+        </p>
+      )}
 
       {/* Footer context */}
       <div className="mt-auto pt-3 border-t border-white/15">
@@ -132,6 +149,19 @@ export const MetricStrip: React.FC<MetricStripProps> = ({
   const deficitCount = data?.deficit_member_count          ?? 0;
   const txCount      = data?.total_transactions            ?? 0;
 
+  // Month-over-month collections delta from the 6-month trend.
+  // Needs a real previous month to compare against — otherwise no chip.
+  const trend     = data?.trend ?? [];
+  const thisMonth = trend.find((t) => t.period_month === data?.period_month);
+  const prevMonth = data?.period_month
+    ? trend.filter((t) => t.period_month < data.period_month).at(-1)
+    : undefined;
+  const momDelta =
+    thisMonth && prevMonth && Number(prevMonth.total_collected_kobo) > 0
+      ? ((Number(thisMonth.total_collected_kobo) - Number(prevMonth.total_collected_kobo)) /
+          Number(prevMonth.total_collected_kobo)) * 100
+      : null;
+
   // deficit_member_count is only non-zero when pledge/campaign funds exist.
   // When all giving is voluntary, repurpose the card to show total transactions.
   const hasPledgeDeficit = deficitCount > 0;
@@ -147,6 +177,7 @@ export const MetricStrip: React.FC<MetricStripProps> = ({
         collected={collected}
         availDisplay={data?.available_display}
         collDisplay={data?.total_collected_display}
+        momDelta={momDelta}
       />
 
       <MetricCard
@@ -158,7 +189,7 @@ export const MetricStrip: React.FC<MetricStripProps> = ({
 
       <MetricCard
         label="Pending payout"
-        value={data?.pending_payouts_display ?? formatNairaCompact(pending)}
+        value={formatNairaCompact(pending)}
         delta={pending > 0 ? 'Awaiting approval' : 'None pending'}
         deltaDir={pending > 0 ? 'warn' : 'neutral'}
         icon={<SendIcon />}

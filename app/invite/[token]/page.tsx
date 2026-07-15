@@ -175,7 +175,7 @@ export default function AcceptInvitePage() {
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-6">
           {/* Invite details */}
           <div className="bg-green-50 dark:bg-green-950/30 border border-green-100 dark:border-green-900/50 rounded-xl p-3.5 mb-5">
-            <p className="text-xs text-green-700 dark:text-green-400">
+            <p className="text-xs text-green-700 dark:text-green-400 wrap-anywhere">
               <span className="font-medium">{details.name}</span> ({details.email}) ·{' '}
               <span className="font-medium">{details.role}</span> at{' '}
               <span className="font-medium">{details.orgName}</span>

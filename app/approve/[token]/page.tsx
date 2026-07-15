@@ -103,7 +103,8 @@ function AmountBadge({ amount, fundName }: { amount: number; fundName: string })
       <p className="text-xs font-semibold uppercase tracking-widest text-purple-300 mb-2">
         {fundName} payout request
       </p>
-      <p className="text-5xl font-bold text-white tracking-tight">
+      {/* Exact figure matters to signatories — wrap rather than compact or clip */}
+      <p className="text-4xl sm:text-5xl font-bold text-white tracking-tight break-all px-2">
         {formatNaira(amount)}
       </p>
     </div>

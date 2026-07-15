@@ -1,7 +1,25 @@
-import useSWR from 'swr';
+import useSWR, { mutate as globalMutate } from 'swr';
 import { useState, useCallback } from 'react';
 import { payoutsApi } from '@/lib/api/payouts.api';
 import type { PayoutStatus } from '@/lib/api/payouts.api';
+
+/**
+ * revalidatePayoutData — refresh every money-bearing view immediately
+ * after a payout mutation (initiate/cancel), instead of waiting up to 30s
+ * for the poll. Two admins acting on stale balances compounds the risk of
+ * over-committing a fund; fresh data narrows that window to ~0.
+ */
+export async function revalidatePayoutData(): Promise<void> {
+  await Promise.all([
+    globalMutate('payouts/fund-balances'),
+    globalMutate('payouts/pending-count'),
+    globalMutate('dashboard/summary'),
+    globalMutate('dashboard/payout-history'),
+    globalMutate((key) =>
+      Array.isArray(key) &&
+      ['payouts', 'payout', 'dashboard/fund-breakdown'].includes(key[0] as string)),
+  ]);
+}
 
 /**
  * usePayouts — payout request list for the admin dashboard.
@@ -28,7 +46,7 @@ export function usePayouts(initialStatus?: PayoutStatus) {
 
   const cancelPayout = useCallback(async (id: string) => {
     await payoutsApi.cancel(id);
-    await mutate();
+    await Promise.all([mutate(), revalidatePayoutData()]);
   }, [mutate]);
 
   // Count pending payouts — used for the sidebar badge
@@ -78,7 +96,7 @@ export function usePayoutDetail(payoutId: string | null) {
   const cancel = useCallback(async () => {
     if (!payoutId) return;
     await payoutsApi.cancel(payoutId);
-    await mutate();
+    await Promise.all([mutate(), revalidatePayoutData()]);
   }, [payoutId, mutate]);
 
   return {

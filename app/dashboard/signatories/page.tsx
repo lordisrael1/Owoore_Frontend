@@ -1,6 +1,7 @@
 'use client';
 import React, { useState } from 'react';
 import { useSignatories } from '@/hooks/useSignatories';
+import { useAuth }      from '@/hooks/useAuth';
 import { Avatar }       from '@/components/ui/Avatar';
 import { Badge }        from '@/components/ui/Badge';
 import { Button }       from '@/components/ui/Button';
@@ -27,6 +28,7 @@ const ROLE_OPTIONS = [
 
 export default function SignatoriesPage() {
   const { success, error } = useToast();
+  const { isTreasurer } = useAuth();
   const {
     signatories, policy, isLoading,
     createSignatory, removeSignatory, updatePolicy,
@@ -119,9 +121,11 @@ export default function SignatoriesPage() {
             Who approves payouts above ₦{formatNairaCompact(Number(policy?.threshold_kobo ?? 0))}
           </p>
         </div>
-        <Button size="sm" icon={<PlusIcon />} onClick={() => setAddOpen(true)}>
-          Add signatory
-        </Button>
+        {!isTreasurer && (
+          <Button size="sm" icon={<PlusIcon />} onClick={() => setAddOpen(true)}>
+            Add signatory
+          </Button>
+        )}
       </div>
 
       {/* Signatory list */}
@@ -146,14 +150,16 @@ export default function SignatoriesPage() {
                     {!sig.is_active   && <Badge variant="cancelled" size="xs">Inactive</Badge>}
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 shrink-0"
-                  onClick={() => { setRemoveId(sig.id); setRemoveName(sig.name); }}
-                >
-                  Remove
-                </Button>
+                {!isTreasurer && (
+                  <Button
+                    variant="ghost"
+                    size="xs"
+                    className="text-red-500 hover:bg-red-50 dark:hover:bg-red-950/20 shrink-0"
+                    onClick={() => { setRemoveId(sig.id); setRemoveName(sig.name); }}
+                  >
+                    Remove
+                  </Button>
+                )}
               </div>
             ))}
           </div>
@@ -164,8 +170,25 @@ export default function SignatoriesPage() {
       <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-5">
         <h2 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-1">Payout approval policy</h2>
         <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
-          Transfers above the threshold require multi-signatory approval.
+          {isTreasurer
+            ? 'Transfers above the threshold require multi-signatory approval. Only an admin can change this policy.'
+            : 'Transfers above the threshold require multi-signatory approval.'}
         </p>
+        {isTreasurer ? (
+          <dl className="grid grid-cols-2 gap-3 text-xs">
+            {[
+              ['Minimum approvers',   String(policy?.min_approvers ?? 2)],
+              ['Approval threshold',  `₦${formatNairaCompact(Number(policy?.threshold_kobo ?? 0))}`],
+              ['Token expiry',        `${policy?.token_expiry_hours ?? 48} hours`],
+              ['Auto-decline after',  `${policy?.auto_decline_hours ?? 72} hours`],
+            ].map(([k, v]) => (
+              <div key={k} className="rounded-lg bg-gray-50 dark:bg-gray-800 p-3">
+                <dt className="text-gray-400 dark:text-gray-500 mb-0.5">{k}</dt>
+                <dd className="text-sm font-medium text-gray-800 dark:text-gray-200">{v}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : (
         <div className="grid grid-cols-2 gap-3 mb-4">
           <Input
             label="Minimum approvers"
@@ -197,7 +220,10 @@ export default function SignatoriesPage() {
             hint="Cancel request after this if no quorum"
           />
         </div>
-        <Button size="sm" loading={saving} onClick={handleSavePolicy}>Save policy</Button>
+        )}
+        {!isTreasurer && (
+          <Button size="sm" loading={saving} onClick={handleSavePolicy}>Save policy</Button>
+        )}
       </div>
 
       {/* Add signatory modal */}

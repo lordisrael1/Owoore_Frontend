@@ -10,7 +10,7 @@ import { Button }     from '@/components/ui/Button';
 import { Badge }      from '@/components/ui/Badge';
 import { CardSkeleton } from '@/components/ui/Spinner';
 import { EmptyState }   from '@/components/ui/EmptyState';
-import { formatNairaCompact, formatPeriod, currentPeriod } from '@/lib/format';
+import { formatNairaCompact, recentPeriods } from '@/lib/format';
 import useSWR from 'swr';
 
 /**
@@ -19,14 +19,7 @@ import useSWR from 'swr';
  */
 
 function getPeriodOptions() {
-  const opts = [{ value: '', label: 'All time (this year)' }];
-  const now  = new Date();
-  for (let i = 0; i < 12; i++) {
-    const d   = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const val = d.toISOString().slice(0, 7);
-    opts.push({ value: val, label: formatPeriod(val) });
-  }
-  return opts;
+  return [{ value: '', label: 'All time (this year)' }, ...recentPeriods(12)];
 }
 
 export default function ReportsPage() {
@@ -48,9 +41,12 @@ export default function ReportsPage() {
     { revalidateOnFocus: false },
   );
 
-  const handleDownload = () => {
-    const url = reportsApi.downloadGivingUrl(orgId, period || undefined);
-    window.open(url, '_blank');
+  const handleDownload = async () => {
+    try {
+      await reportsApi.downloadGiving(orgId, period || undefined, fundFilter || undefined);
+    } catch {
+      // download errors surface via the button state; nothing else to do
+    }
   };
 
   const periodOptions = getPeriodOptions();

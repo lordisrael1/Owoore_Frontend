@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, downloadFile } from './client';
 
 export interface FundTotalRow {
   fund_type_id:     string;
@@ -86,18 +86,36 @@ export const reportsApi = {
   },
 
   /**
-   * downloadGivingUrl — constructs a URL for CSV download.
-   * Opening this URL in a new tab triggers a file download from the server.
-   * The Authorization header is passed as a query param since browser download
-   * navigations can't set custom headers.
+   * downloadGiving — fetches the CSV with the Authorization header and
+   * saves it via Blob. Replaces the old token-in-URL window.open flow,
+   * which leaked the admin JWT into logs, history, and Referers.
    */
-  downloadGivingUrl: (orgId: string, period?: string): string => {
-    const base  = process.env.NEXT_PUBLIC_API_URL ?? 'https://owoore.onrender.com/api/v1';
-    const token = typeof window !== 'undefined'
-      ? localStorage.getItem('owoore_admin_token') ?? ''
-      : '';
-    const p = period ? `&period=${period}` : '';
-    return `${base}/orgs/${orgId}/reports/giving?format=csv${p}&token=${token}`;
+  downloadGiving: async (orgId: string, period?: string, fundTypeId?: string): Promise<void> => {
+    const params = new URLSearchParams({ format: 'csv' });
+    if (period)     params.set('period',       period);
+    if (fundTypeId) params.set('fund_type_id', fundTypeId);
+    await downloadFile(
+      `/orgs/${orgId}/reports/giving?${params.toString()}`,
+      `giving-report${period ? `-${period}` : ''}.csv`,
+    );
+  },
+
+  /**
+   * downloadFundSummary — the board-report CSV: one row per fund per month
+   * (collected, paid out, net, givers, transactions) with a TOTAL row.
+   *
+   *   period 'YYYY-MM' → that single month
+   *   year (default current) → every month in the year
+   */
+  downloadFundSummary: async (orgId: string, opts: { period?: string; year?: number } = {}): Promise<void> => {
+    const params = new URLSearchParams({ format: 'csv', view: 'summary' });
+    if (opts.period)    params.set('period', opts.period);
+    else if (opts.year) params.set('year',   String(opts.year));
+    const scope = opts.period ?? opts.year ?? new Date().getFullYear();
+    await downloadFile(
+      `/orgs/${orgId}/reports/giving?${params.toString()}`,
+      `fund-summary-${scope}.csv`,
+    );
   },
 
   /**

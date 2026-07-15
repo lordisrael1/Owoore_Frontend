@@ -96,7 +96,7 @@ export const Select: React.FC<SelectProps> = ({
         aria-haspopup="listbox"
         aria-expanded={open}
       >
-        <span className={cn(selected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400')}>
+        <span className={cn('truncate', selected ? 'text-gray-900 dark:text-gray-100' : 'text-gray-400')}>
           {selected?.label ?? placeholder}
         </span>
         <svg

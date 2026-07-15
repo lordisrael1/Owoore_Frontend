@@ -37,7 +37,9 @@ export function Table<T>({
 
   return (
     <div className={cn('w-full overflow-x-auto', className)}>
-      <table className="w-full text-sm table-fixed border-collapse">
+      {/* min-w keeps table-fixed columns readable on narrow screens —
+          below it the wrapper scrolls horizontally instead of squishing */}
+      <table className="w-full min-w-xl text-sm table-fixed border-collapse">
         <thead>
           <tr>
             {columns.map((col) => (

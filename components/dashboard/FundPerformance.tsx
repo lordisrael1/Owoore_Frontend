@@ -61,7 +61,7 @@ export const FundPerformance: React.FC<FundPerformanceProps> = ({
     <Card>
       <CardHeader
         title="Fund performance"
-        subtitle="This period · vs target"
+        subtitle="This period · share of giving"
         action={
           <Link href="/dashboard/funds" className="text-xs text-green-700 dark:text-green-400 hover:underline flex items-center gap-0.5">
             View all
@@ -73,12 +73,15 @@ export const FundPerformance: React.FC<FundPerformanceProps> = ({
       />
 
       <div className="space-y-1">
+        {/* Bars show each fund's collection relative to the top fund this
+            period — a real comparison. (The old hardcoded 100% bar
+            communicated nothing and implied every fund had hit a target.) */}
         {items.slice(0, 5).map((fund, i) => {
-          const collected = Number(fund.total_collected_kobo);
-          const hasTarget = false; // extend when backend sends expected
-          const pct       = hasTarget ? 75 : 100;
-          const color     = COLORS[i % COLORS.length];
-          const tracked   = isMemberTracked(fund);
+          const collected    = Number(fund.total_collected_kobo);
+          const maxCollected = Math.max(...items.map((f) => Number(f.total_collected_kobo)), 1);
+          const pct          = Math.max(2, Math.round((collected / maxCollected) * 100));
+          const color        = COLORS[i % COLORS.length];
+          const tracked      = isMemberTracked(fund);
 
           const row = (
             <>
@@ -90,7 +93,11 @@ export const FundPerformance: React.FC<FundPerformanceProps> = ({
                 color === 'amber' && 'bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-400',
                 color === 'red'   && 'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-400',
               )}>
-                {['♥','🏛','🎁','⭐'][i % 4]}
+                {/* Fund initial, not emoji — renders identically on every
+                    platform; decorative since the name sits right beside it */}
+                <span aria-hidden="true" className="font-semibold">
+                  {fund.fund_name.charAt(0).toUpperCase()}
+                </span>
               </div>
 
               {/* Progress */}

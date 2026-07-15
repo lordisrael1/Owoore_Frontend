@@ -3,7 +3,8 @@ import * as React from 'react';
 import Link from 'next/link';
 import { cn } from '@/lib/cn';
 import { Button } from '@/components/ui/Button';
-import { formatPeriod, currentPeriod } from '@/lib/format';
+import { useUiStore } from '@/store/uiStore';
+import { formatPeriod, currentPeriod, recentPeriods } from '@/lib/format';
 
 interface AdminTopbarProps {
   title?:         string;
@@ -27,23 +28,18 @@ const PlusIcon = () => (
   </svg>
 );
 
+const MenuIcon = () => (
+  <svg className="w-5 h-5" fill="none" viewBox="0 0 20 20" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+    <path d="M3 5h14M3 10h14M3 15h14" strokeLinecap="round"/>
+  </svg>
+);
+
 const ChevronIcon = () => (
   <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 12 12" aria-hidden="true">
     <path d="M3.22 4.72a.75.75 0 011.06 0L6 6.44l1.72-1.72a.75.75 0 111.06 1.06L6.53 8.03a.75.75 0 01-1.06 0L3.22 5.78a.75.75 0 010-1.06z"/>
   </svg>
 );
 
-// Simple period picker — cycles through last 6 months
-function getRecentPeriods(): Array<{ value: string; label: string }> {
-  const periods = [];
-  const now = new Date();
-  for (let i = 0; i < 6; i++) {
-    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-    const value = d.toISOString().slice(0, 7);
-    periods.push({ value, label: formatPeriod(value) });
-  }
-  return periods;
-}
 
 export const AdminTopbar: React.FC<AdminTopbarProps> = ({
   title          = 'Dashboard',
@@ -54,9 +50,10 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
   showNewPayout  = true,
   className,
 }) => {
+  const toggleSidebar = useUiStore((s) => s.toggleSidebar);
   const [periodOpen, setPeriodOpen] = React.useState(false);
   const activePeriod = period ?? currentPeriod();
-  const periods      = React.useMemo(() => getRecentPeriods(), []);
+  const periods      = React.useMemo(() => recentPeriods(6), []);
   const periodRef    = React.useRef<HTMLDivElement>(null);
 
   // Close dropdown on outside click
@@ -73,22 +70,36 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
   return (
     <header
       className={cn(
-        'flex items-center justify-between px-6 py-3.5',
+        'flex items-center justify-between gap-2 px-4 sm:px-6 py-3.5',
         'bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800',
         'sticky top-0 z-20',
         className,
       )}
     >
-      {/* Left: title */}
-      <div>
-        <h1 className="text-sm font-medium text-gray-900 dark:text-gray-100">{title}</h1>
-        {subtitle && (
-          <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">{subtitle}</p>
-        )}
+      {/* Left: sidebar toggle (mobile/tablet) + title */}
+      <div className="flex items-center gap-2 min-w-0">
+        <button
+          onClick={toggleSidebar}
+          className={cn(
+            'lg:hidden shrink-0 -ml-2 w-10 h-10 flex items-center justify-center rounded-lg',
+            'text-gray-600 dark:text-gray-300',
+            'hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors',
+            'focus:outline-none focus:ring-2 focus:ring-green-700',
+          )}
+          aria-label="Open navigation menu"
+        >
+          <MenuIcon />
+        </button>
+        <div className="min-w-0">
+          <h1 className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">{title}</h1>
+          {subtitle && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5 truncate">{subtitle}</p>
+          )}
+        </div>
       </div>
 
       {/* Right: controls */}
-      <div className="flex items-center gap-2.5">
+      <div className="flex items-center gap-2.5 shrink-0">
         {/* Period picker */}
         {onPeriodChange && (
           <div className="relative" ref={periodRef}>
@@ -170,11 +181,11 @@ export const AdminTopbar: React.FC<AdminTopbarProps> = ({
           )}
         </div>
 
-        {/* New payout CTA */}
+        {/* New payout CTA — icon-only below sm to keep the bar on one line */}
         {showNewPayout && (
-          <Link href="/dashboard/payouts/new">
+          <Link href="/dashboard/payouts/new" aria-label="New payout">
             <Button size="sm" variant="primary" icon={<PlusIcon />}>
-              New payout
+              <span className="hidden sm:inline">New payout</span>
             </Button>
           </Link>
         )}

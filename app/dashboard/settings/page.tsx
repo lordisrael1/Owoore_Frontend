@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useOrgStore } from '@/store/orgStore';
+import { useAuth }     from '@/hooks/useAuth';
 import { orgsApi }     from '@/lib/api/orgs.api';
 import { Input }       from '@/components/ui/Input';
 import { Button }      from '@/components/ui/Button';
@@ -14,6 +15,7 @@ import { CopyButton }  from '@/components/ui/CopyButton';
  */
 export default function SettingsPage() {
   const org      = useOrgStore();
+  const { isTreasurer } = useAuth();
   const { success, error } = useToast();
   const [loading, setLoading] = useState(false);
 
@@ -89,7 +91,13 @@ export default function SettingsPage() {
               <p className="text-xs text-gray-400">Logo preview</p>
             </div>
           )}
-          <Button type="submit" size="sm" loading={loading}>Save changes</Button>
+          {isTreasurer ? (
+            <p className="text-xs text-gray-400 dark:text-gray-500">
+              Only an admin can change the church profile.
+            </p>
+          ) : (
+            <Button type="submit" size="sm" loading={loading}>Save changes</Button>
+          )}
         </form>
       </div>
 
@@ -115,16 +123,18 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Team link */}
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 flex items-center justify-between">
-        <div>
-          <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Team members</p>
-          <p className="text-xs text-gray-400 mt-0.5">Invite treasurer or additional admins</p>
+      {/* Team link — invites are ADMIN-only on the backend */}
+      {!isTreasurer && (
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-100 dark:border-gray-800 p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">Team members</p>
+            <p className="text-xs text-gray-400 mt-0.5">Invite treasurer or additional admins</p>
+          </div>
+          <Link href="/dashboard/settings/team">
+            <Button variant="outline" size="sm">Manage team →</Button>
+          </Link>
         </div>
-        <Link href="/dashboard/settings/team">
-          <Button variant="outline" size="sm">Manage team →</Button>
-        </Link>
-      </div>
+      )}
 
       {/* Danger zone */}
       <div className="bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/50 p-4">

@@ -7,11 +7,12 @@ import { Avatar } from '@/components/ui/Avatar';
 import { getCurrentAdmin } from '@/lib/auth/guards';
 
 interface NavItem {
-  label:    string;
-  href:     string;
-  icon:     React.ReactNode;
-  badge?:   string;
-  exact?:   boolean;
+  label:      string;
+  href:       string;
+  icon:       React.ReactNode;
+  badge?:     string;
+  exact?:     boolean;
+  adminOnly?: boolean; // hidden from TREASURER — backend rejects these routes anyway
 }
 
 interface NavSection {
@@ -30,6 +31,9 @@ const LinkIcon     = () => <svg className="w-4 h-4" fill="none" viewBox="0 0 16 
 const ChurchIcon   = () => <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5a.75.75 0 01.75.75V4h1.5a.75.75 0 010 1.5H8.75V8h2.5a.75.75 0 01.75.75V14a.5.5 0 01-.5.5h-7a.5.5 0 01-.5-.5V8.75A.75.75 0 014.75 8h2.5V5.5H5.75a.75.75 0 010-1.5h1.5V2.25A.75.75 0 018 1.5z"/></svg>;
 const LogoutIcon   = () => <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M11 10l3-2-3-2" strokeLinecap="round" strokeLinejoin="round"/><path d="M6 8h8M6 3H3a1 1 0 00-1 1v8a1 1 0 001 1h3" strokeLinecap="round"/></svg>;
 
+const TxIcon = () => <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M3 5h9M9.5 2.5L12 5l-2.5 2.5M13 11H4M6.5 8.5L4 11l2.5 2.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const TeamIcon = () => <svg className="w-4 h-4" fill="none" viewBox="0 0 16 16" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><circle cx="8" cy="4.5" r="2.25"/><path d="M3.5 13.5c0-2.485 2.015-4.5 4.5-4.5s4.5 2.015 4.5 4.5" strokeLinecap="round"/><path d="M13 6.5l.75.75L15.5 5.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+
 const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Overview',
@@ -39,7 +43,7 @@ const NAV_SECTIONS: NavSection[] = [
     ],
   },
   {
-    label: 'Church',
+    label: 'Giving',
     items: [
       { label: 'Fund types', href: '/dashboard/funds',    icon: <FundsIcon /> },
       { label: 'Join link',  href: '/dashboard/join-link', icon: <LinkIcon /> },
@@ -48,15 +52,17 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: 'Treasury',
     items: [
-      { label: 'Payouts',     href: '/dashboard/payouts',     icon: <PayoutsIcon /> },
-      { label: 'Signatories', href: '/dashboard/signatories', icon: <SignIcon /> },
-      { label: 'Reports',     href: '/dashboard/reports',     icon: <ReportsIcon /> },
+      { label: 'Transactions', href: '/dashboard/transactions', icon: <TxIcon /> },
+      { label: 'Payouts',      href: '/dashboard/payouts',      icon: <PayoutsIcon /> },
+      { label: 'Signatories',  href: '/dashboard/signatories',  icon: <SignIcon /> },
+      { label: 'Reports',      href: '/dashboard/reports',      icon: <ReportsIcon /> },
     ],
   },
   {
-    label: 'Admin',
+    label: 'Organisation',
     items: [
-      { label: 'Settings', href: '/dashboard/settings', icon: <SettingsIcon /> },
+      { label: 'Team members', href: '/dashboard/settings/team', icon: <TeamIcon />, adminOnly: true },
+      { label: 'Settings',     href: '/dashboard/settings',      icon: <SettingsIcon />, exact: true },
     ],
   },
 ];
@@ -72,6 +78,11 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 }) => {
   const pathname = usePathname();
   const admin    = getCurrentAdmin();
+  const isTreasurer = admin?.role === 'TREASURER';
+
+  const visibleSections = NAV_SECTIONS
+    .map((s) => ({ ...s, items: s.items.filter((i) => !i.adminOnly || !isTreasurer) }))
+    .filter((s) => s.items.length > 0);
 
   const isActive = (href: string, exact = false) => {
     if (exact) return pathname === href;
@@ -100,7 +111,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-3 px-2.5" aria-label="Dashboard navigation">
-        {NAV_SECTIONS.map((section) => (
+        {visibleSections.map((section) => (
           <div key={section.label} className="mb-4">
             <p className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-wider px-2 mb-1.5">
               {section.label}

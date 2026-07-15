@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useFunds } from '@/hooks/useFunds';
+import { useAuth }  from '@/hooks/useAuth';
 import { Badge }    from '@/components/ui/Badge';
 import { Button }   from '@/components/ui/Button';
 import type { FundType } from '@/lib/api/funds.api';
@@ -18,6 +19,7 @@ import { isExpired, isCampaign, daysUntilExpiry } from '@/types/fund.types';
  */
 export default function FundsPage() {
   const { success, error } = useToast();
+  const { isTreasurer } = useAuth();
   const { funds, activeFunds, inactiveFunds, isLoading, deactivateFund, updateFund } = useFunds(true);
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deactivating, setDeactivating] = useState(false);
@@ -73,9 +75,11 @@ export default function FundsPage() {
             {activeFunds.length} active · {inactiveFunds.length} inactive
           </p>
         </div>
-        <Link href="/dashboard/funds/new">
-          <Button size="sm" icon={<PlusIcon />}>New fund</Button>
-        </Link>
+        {!isTreasurer && (
+          <Link href="/dashboard/funds/new">
+            <Button size="sm" icon={<PlusIcon />}>New fund</Button>
+          </Link>
+        )}
       </div>
 
       {/* Active funds */}
@@ -112,26 +116,30 @@ export default function FundsPage() {
                     </p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      loading={togglingId === fund.id}
-                      onClick={() => handleToggleShared(fund)}
-                      title={fund.is_shared_va ? 'Switch to per-member accounts' : 'Switch to shared account'}
-                    >
-                      {fund.is_shared_va ? 'Per-member' : 'Make shared'}
-                    </Button>
+                    {!isTreasurer && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        loading={togglingId === fund.id}
+                        onClick={() => handleToggleShared(fund)}
+                        title={fund.is_shared_va ? 'Switch to per-member accounts' : 'Switch to shared account'}
+                      >
+                        {fund.is_shared_va ? 'Per-member' : 'Make shared'}
+                      </Button>
+                    )}
                     <Link href={`/dashboard/funds/${fund.id}`}>
-                      <Button variant="ghost" size="xs">Edit</Button>
+                      <Button variant="ghost" size="xs">{isTreasurer ? 'View' : 'Edit'}</Button>
                     </Link>
-                    <Button
-                      variant="ghost"
-                      size="xs"
-                      className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
-                      onClick={() => setConfirmId(fund.id)}
-                    >
-                      Deactivate
-                    </Button>
+                    {!isTreasurer && (
+                      <Button
+                        variant="ghost"
+                        size="xs"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                        onClick={() => setConfirmId(fund.id)}
+                      >
+                        Deactivate
+                      </Button>
+                    )}
                   </div>
                 </div>
               );
@@ -143,8 +151,12 @@ export default function FundsPage() {
       {activeFunds.length === 0 && (
         <EmptyState
           title="No active funds"
-          message="Create your first fund type to let members start giving."
-          action={<Link href="/dashboard/funds/new"><Button size="sm">Create fund</Button></Link>}
+          message={isTreasurer
+            ? 'No funds yet — ask an admin to create the first fund type.'
+            : 'Create your first fund type to let members start giving.'}
+          action={isTreasurer ? undefined : (
+            <Link href="/dashboard/funds/new"><Button size="sm">Create fund</Button></Link>
+          )}
         />
       )}
 
@@ -161,7 +173,7 @@ export default function FundsPage() {
                   <p className="text-sm text-gray-500 line-through">{fund.name}</p>
                 </div>
                 <Link href={`/dashboard/funds/${fund.id}`}>
-                  <Button variant="ghost" size="xs">Reactivate</Button>
+                  <Button variant="ghost" size="xs">{isTreasurer ? 'View' : 'Reactivate'}</Button>
                 </Link>
               </div>
             ))}

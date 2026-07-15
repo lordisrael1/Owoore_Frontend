@@ -78,9 +78,30 @@ export function formatPeriod(yyyyMM: string): string {
 
 /**
  * currentPeriod — returns current period as YYYY-MM.
+ * UTC-based to match how the backend buckets period_month.
  */
 export function currentPeriod(): string {
   return new Date().toISOString().slice(0, 7);
+}
+
+/**
+ * recentPeriods — the last `count` periods (newest first) as
+ * { value: 'YYYY-MM', label: 'June 2026' } options.
+ *
+ * Enumerated entirely in UTC. The old per-caller version built local
+ * Date objects and ran them through toISOString(), which shifts local
+ * midnight across a month boundary in any timezone that isn't UTC —
+ * producing duplicate/missing months in the picker.
+ */
+export function recentPeriods(count = 6): Array<{ value: string; label: string }> {
+  const [year, month] = currentPeriod().split('-').map(Number);
+  const periods = [];
+  for (let i = 0; i < count; i++) {
+    const d     = new Date(Date.UTC(year, month - 1 - i, 1));
+    const value = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+    periods.push({ value, label: formatPeriod(value) });
+  }
+  return periods;
 }
 
 /**

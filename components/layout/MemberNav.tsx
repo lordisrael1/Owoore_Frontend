@@ -41,26 +41,27 @@ export const MemberNav: React.FC<MemberNavProps> = ({
     <header className="sticky top-0 z-20 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800">
       <div className="max-w-3xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14">
-          {/* Brand */}
-          <Link href="/portal" className="flex items-center gap-2 group">
+          {/* Brand — min-w-0 so a long church name truncates instead of
+              pushing the nav + sign-out past the viewport edge */}
+          <Link href="/portal" className="flex items-center gap-2 group min-w-0">
             {logoUrl ? (
               <img
                 src={logoUrl}
                 alt={orgName}
-                className="w-7 h-7 rounded-lg object-cover"
+                className="w-7 h-7 rounded-lg object-cover shrink-0"
               />
             ) : (
-              <div className="w-7 h-7 rounded-lg bg-green-700 flex items-center justify-center">
+              <div className="w-7 h-7 rounded-lg bg-green-700 flex items-center justify-center shrink-0">
                 <ChurchIcon />
               </div>
             )}
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate max-w-37.5 sm:max-w-none">
+            <span className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
               {orgName}
             </span>
           </Link>
 
           {/* Nav links — hidden on mobile, shown on sm+ */}
-          <nav className="hidden sm:flex items-center gap-1" aria-label="Member navigation">
+          <nav className="hidden sm:flex items-center gap-1 shrink-0" aria-label="Member navigation">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
@@ -79,7 +80,7 @@ export const MemberNav: React.FC<MemberNavProps> = ({
           </nav>
 
           {/* Right: avatar + sign out */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             {member && (
               <span className="hidden sm:block text-xs text-gray-400 dark:text-gray-500 max-w-30 truncate">
                 {member.email}
