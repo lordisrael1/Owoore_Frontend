@@ -108,7 +108,7 @@ export const FAQ: React.FC = () => {
     >
       {/* Soft background glow */}
       <div
-        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[700px] h-[500px] opacity-60 pointer-events-none animate-ring-pulse"
+        className="absolute top-1/4 left-1/2 -translate-x-1/2 w-175 h-125 opacity-60 pointer-events-none animate-ring-pulse"
         style={{ background: 'radial-gradient(ellipse, rgba(22,163,74,.06) 0%, transparent 70%)' }}
         aria-hidden="true"
       />

@@ -49,7 +49,7 @@ const ReceiptCard: React.FC = () => {
     <div className="relative w-full max-w-sm mx-auto animate-scale-in delay-500 perspective-1200">
       {/* Glow shadow */}
       <div
-        className="absolute -inset-8 rounded-[2rem] opacity-40 blur-3xl animate-ring-pulse"
+        className="absolute -inset-8 rounded-4xl opacity-40 blur-3xl animate-ring-pulse"
         style={{ background: 'radial-gradient(ellipse, rgba(22,163,74,.35) 0%, transparent 70%)' }}
         aria-hidden="true"
       />
