@@ -249,7 +249,7 @@ function activity() {
     desc: STRESS && i % 2 === 0
       ? `${LONG_NAME} paid ${naira(123456789012)} into ${STRESS_FUND_NAME()} via bank transfer with narration "${LONG_NARRATION}"`
       : ['Adaeze Okonkwo paid ₦5,000.00 into Tithe', '₦150,000.00 sent to GTBank ••••6789', 'Tunde Bakare joined via join link', 'Building Fund hit 48% of target', 'All 214 transactions reconciled'][i % 5],
-    time: `${i * 3 + 2}m ago`,
+    time: new Date(Date.now() - (i * 3 + 2) * 60_000).toISOString(),
     action: ['/dashboard/transactions', '/dashboard/payouts', '/dashboard/members', '/dashboard/funds', '/dashboard'][i % 5],
   }));
 }
